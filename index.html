@@ -1,5 +1,5 @@
 <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
-<title>干支歴</title>
+<title>世界の開運カレンダー｜日本・中国・韓国</title>
 <link rel="icon" href="data:image/svg+xml,<svg xmlns=%22http://www.w3.org/2000/svg%22 viewBox=%220 0 100 100%22><text y=%22.9em%22 font-size=%2290%22>🗓️</text></svg>">
 <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Shippori+Mincho:wght@500;700&family=Zen+Kaku+Gothic+New:wght@400;500;700&display=swap">
 <style>
@@ -65,6 +65,10 @@
   .b-taian{ background:var(--badge-taian); }
   .b-mi{ background:var(--badge-mi); }
   .b-tora{ background:var(--badge-tora); }
+  .b-more{background:#777f88}
+  .world-flags{font-size:11px;line-height:1.2;letter-spacing:1px;margin-top:2px}
+  .cell:not(.empty){cursor:pointer}
+  .cell:focus-visible{outline:2px solid var(--accent)}
 
   .grid{
     display:grid; grid-template-columns: repeat(7, 1fr); gap:5px;
@@ -161,7 +165,7 @@
     <span class="badge b-taian">大安</span>
     <span class="badge b-mi">巳/己巳</span>
     <span class="badge b-tora">寅</span>
-    <span class="ganzhi-hint">干支をタップで今日のテーマ</span>
+    <span class="ganzhi-hint">🇯🇵 日本の吉日・🇨🇳 中国の十二直・🇰🇷 韓国の吉日｜日付をタップで詳細</span>
   </div>
 
   <div class="grid" id="weekdayRow"></div>
@@ -210,9 +214,12 @@
     "大安": "六曜で最も良いとされる日",
     "寅の日": "金運が舞い戻るとされる日",
     "巳の日": "金運・財運アップの日",
-    "己巳の日": "弁財天の縁日で金運アップの日"
+    "己巳の日": "弁財天の縁日で金運アップの日",
+    "大明日": "天地が明るく照らすとされる日。移転や旅行、新しい取り組みの参考に。",
+    "母倉日": "天が人を慈しみ育てるとされる日。婚礼や家庭の節目などに。",
+    "月徳日": "月の徳が巡るとされる日。修繕や新しい計画などに。"
   };
-  var LUCKY_DAY_ORDER = ["天赦日","一粒万倍日","大安","己巳の日","巳の日","寅の日"];
+  var LUCKY_DAY_ORDER = ["天赦日","一粒万倍日","大安","己巳の日","巳の日","寅の日","大明日","母倉日","月徳日"];
 
   // GANZHI_MEANINGS_BEGIN - AUTO-GENERATED from ganzhi_meanings.json
   var GANZHI_MEANINGS = {
@@ -1086,6 +1093,57 @@
     var ld = lunarDate(year,month,day);
     return ROKUYO[mod(ld.month+ld.day,6)];
   }
+
+  // 追加暦注。母倉日は節月基準の一般的な配当を使用。
+  var DAIMYO_GANZHI = new Set("戊午 己巳 庚午 辛未 壬申 癸酉 丁丑 己卯 壬午 甲申 丁亥 壬辰 乙未 壬寅 甲辰 乙巳 丙午 丁未 己酉 庚戌 辛亥 丙辰 己未 庚申 辛酉".split(" "));
+  var BOSO_BRANCHES = {
+    "寅":["亥","子"],"卯":["亥","子"],"辰":["巳","午"],
+    "巳":["寅","卯"],"午":["寅","卯"],"未":["巳","午"],
+    "申":["丑","辰","未","戌"],"酉":["丑","辰","未","戌"],"戌":["巳","午"],
+    "亥":["申","酉"],"子":["申","酉"],"丑":["巳","午"]
+  };
+  var GETTOKU_STEM = {"寅":"丙","午":"丙","戌":"丙","亥":"甲","卯":"甲","未":"甲","申":"壬","子":"壬","辰":"壬","巳":"庚","酉":"庚","丑":"庚"};
+  var KENJO_NAMES = ["建日","除日","満日","平日","定日","執日","破日","危日","成日","収日","開日","閉日"];
+  var KENJO_INFO = {
+    "建日":["物事を建て始める日","🌱 始まり・挑戦"],
+    "除日":["障害や不要なものを除く日","🧹 浄化・整理"],
+    "満日":["満ち足りることを願う日","💰 金運・商売"],
+    "平日":["物事を平らかに整える日","❤️ 人間関係"],
+    "定日":["物事を定める日","🌱 始まり・挑戦"],
+    "執日":["物事を執り行い保つ日",""],
+    "破日":["破ることに意味がある日。一般の慶事には慎重に",""],
+    "危日":["慎重さを大切にする日",""],
+    "成日":["物事の成就を願う日","🌱 始まり・挑戦"],
+    "収日":["収穫や収納を意識する日","💰 金運・商売"],
+    "開日":["新しいことを開く日","🌱 始まり・挑戦"],
+    "閉日":["物事を閉じてまとめる日",""]
+  };
+  var KENJO_FEATURED = new Set(["建日","除日","満日","平日","定日","成日","収日","開日"]);
+  // 十二直は節入りの日を前日と同じ直として数える方式を採用。
+  // 既存の節月・日の干支を再利用する。
+  function kenjoFor(y,m,d){
+    var ms=Date.UTC(y,m-1,d,12)-9*3600000;
+    var mg=monthGanzhiAt(ms), g=dayGanzhi(y,m,d);
+    var idx=mod(DAY_BRANCHES.indexOf(g.branch)-DAY_BRANCHES.indexOf(mg.branch),12);
+    return KENJO_NAMES[idx];
+  }
+  // Intlの中国暦は韓国旧暦と稀に日付差が生じるため、韓国暦の代替計算として暫定利用。
+  var koreanLunarFormatter;
+  try { koreanLunarFormatter=new Intl.DateTimeFormat("en-u-ca-chinese",{timeZone:"Asia/Seoul",day:"numeric",month:"numeric"}); } catch(e){}
+  function koreanLuckyFor(y,m,d){
+    if (!koreanLunarFormatter) return false;
+    var parts=koreanLunarFormatter.formatToParts(new Date(Date.UTC(y,m-1,d,3)));
+    var day=Number((parts.find(function(p){return p.type==="day";})||{}).value);
+    return [9,10,19,20,29,30].indexOf(day)!==-1;
+  }
+  function worldInfoFor(y,m,d){
+    var result=[];
+    var name=kenjoFor(y,m,d);
+    result.push({country:"🇨🇳 中国",name:"建除十二神・"+name,desc:KENJO_INFO[name][0],category:KENJO_INFO[name][1],featured:KENJO_FEATURED.has(name)});
+    if(koreanLuckyFor(y,m,d))result.push({country:"🇰🇷 韓国",name:"ソンオムヌンナル（손 없는 날）",desc:"旧暦の日付の末尾が9または0となる、引っ越しや婚礼などの縁起を担ぐ日。※中国暦ベースの暫定判定です。",category:"🌱 始まり・挑戦・❤️ 人間関係",featured:true});
+    return result;
+  }
+
   function luckyDaysFor(year,month,day){
     var g = dayGanzhi(year,month,day);
     var ganzhi = g.stem+g.branch;
@@ -1099,6 +1157,9 @@
     if (ganzhi==="己巳") result.push("己巳の日");
     else if (g.branch==="巳") result.push("巳の日");
     if (g.branch==="寅") result.push("寅の日");
+    if (DAIMYO_GANZHI.has(ganzhi)) result.push("大明日");
+    if ((BOSO_BRANCHES[monthBranch]||[]).indexOf(g.branch)!==-1) result.push("母倉日");
+    if (GETTOKU_STEM[monthBranch]===g.stem) result.push("月徳日");
     return result;
   }
   function badgeClassFor(name){
@@ -1141,19 +1202,26 @@
     var section = document.getElementById("ganzhiModalLucky");
     var items = document.getElementById("ganzhiModalLuckyItems");
     items.textContent = "";
-    section.hidden = ordered.length === 0;
+    var world=worldInfoFor(parts[0],parts[1],parts[2]);
+    section.hidden = ordered.length === 0 && world.length === 0;
     ordered.forEach(function(name){
       var item = document.createElement("div");
       item.className = "lucky-modal-item";
       var title = document.createElement("div");
       title.className = "lucky-modal-name";
-      title.textContent = "✦ " + name;
+      title.textContent = "🇯🇵 " + name;
       var desc = document.createElement("div");
       desc.className = "lucky-modal-description";
       desc.textContent = LUCKY_DAY_TEXT[name] || "";
       item.appendChild(title);
       item.appendChild(desc);
       items.appendChild(item);
+    });
+    world.forEach(function(w){
+      var item=document.createElement("div"); item.className="lucky-modal-item";
+      var title=document.createElement("div");title.className="lucky-modal-name";title.textContent=w.country+"｜"+w.name;
+      var desc=document.createElement("div");desc.className="lucky-modal-description";desc.textContent=w.desc+(w.category?"（"+w.category+"）":"");
+      item.appendChild(title);item.appendChild(desc);items.appendChild(item);
     });
     var modal = document.getElementById("ganzhiModal");
     modal.classList.add("open");
@@ -1233,17 +1301,24 @@
         var ordered = LUCKY_DAY_ORDER.filter(function(n){ return lucky.indexOf(n)!==-1; });
         var badgesWrap = document.createElement("div");
         badgesWrap.className = "badges";
-        ordered.forEach(function(name){
+        ordered.slice(0,2).forEach(function(name){
           var b = document.createElement("span");
           b.className = "badge " + badgeClassFor(name);
           b.textContent = badgeShortFor(name);
           b.title = name + "：" + (LUCKY_DAY_TEXT[name] || "");
           badgesWrap.appendChild(b);
         });
+        if(ordered.length>2){var more=document.createElement("span");more.className="badge b-more";more.textContent="+"+(ordered.length-2);badgesWrap.appendChild(more);}
         cell.appendChild(badgesWrap);
       }
 
 
+      var world=worldInfoFor(y,m,d);
+      var featured=world.filter(function(w){return w.featured;});
+      if(featured.length){var flags=document.createElement("div");flags.className="world-flags";flags.textContent=featured.map(function(w){return w.country.slice(0,4);}).join(" ");cell.appendChild(flags);}
+      cell.setAttribute("tabindex","0");cell.setAttribute("role","button");cell.setAttribute("aria-label",d+"日の詳細を開く");
+      cell.addEventListener("click",function(e){if(e.target.classList.contains("ganzhi"))return;var g=this.querySelector(".ganzhi");openGanzhiModal(g.textContent,g.dataset.date);});
+      cell.addEventListener("keydown",function(e){if(e.target!==this)return;if(e.key==="Enter"||e.key===" "){e.preventDefault();var g=this.querySelector(".ganzhi");openGanzhiModal(g.textContent,g.dataset.date);}});
       grid.appendChild(cell);
     }
   }
