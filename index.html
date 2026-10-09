@@ -1217,7 +1217,7 @@
       item.appendChild(desc);
       items.appendChild(item);
     });
-    world.forEach(function(w){
+    world.filter(function(w){ return w.featured; }).forEach(function(w){
       var item=document.createElement("div"); item.className="lucky-modal-item";
       var title=document.createElement("div");title.className="lucky-modal-name";title.textContent=w.country+"｜"+w.name;
       var desc=document.createElement("div");desc.className="lucky-modal-description";desc.textContent=w.desc+(w.category?"（"+w.category+"）":"");
