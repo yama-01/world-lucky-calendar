@@ -1,0 +1,1255 @@
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<title>干支歴</title>
+<link rel="icon" href="data:image/svg+xml,<svg xmlns=%22http://www.w3.org/2000/svg%22 viewBox=%220 0 100 100%22><text y=%22.9em%22 font-size=%2290%22>🗓️</text></svg>">
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Shippori+Mincho:wght@500;700&family=Zen+Kaku+Gothic+New:wght@400;500;700&display=swap">
+<style>
+  /* このページは常にライト・グレー基調で表示する（端末のダークモード設定に関わらず統一） */
+  :root{
+    --bg:#eef0f3; --card:#ffffff; --ink:#20242a; --sub:#6b7280;
+    --line:#e2e5ea; --rule:#dde0e6;
+    --accent:#2c4a63; --accent-soft:#dfe6ea; --accent-ink:#f2f1ea;
+    --sun:#b23a2f; --sat:#2c4a63;
+    --badge-tensha:#a3791f; --badge-ichiryu:#3f7d54; --badge-taian:#b23a2f;
+    --badge-mi:#7a5a86; --badge-tora:#2f7d6f;
+    --today-ring:#b23a2f;
+  }
+
+  * { box-sizing:border-box; }
+  body{
+    background:var(--bg); color:var(--ink);
+    font-family: "Zen Kaku Gothic New", "Hiragino Sans", "Yu Gothic", -apple-system, "Segoe UI", sans-serif;
+    padding: 16px; padding-block: 20px 40px;
+  }
+  .title{
+    font-family: "Shippori Mincho", "Hiragino Mincho ProN", serif;
+    font-size: 15px; letter-spacing: 0.4em; color: var(--sub);
+    text-align: center; margin: 0 0 14px; text-indent: 0.4em;
+  }
+  .wrap{ max-width: 980px; margin: 0 auto; }
+
+  .headers{
+    display:flex; gap:10px; flex-wrap:wrap; margin-bottom:14px;
+  }
+  .header-card{
+    flex:1 1 220px; background:var(--accent); border:1px solid var(--accent);
+    border-radius:4px; padding:12px 14px; display:flex; align-items:center; justify-content:space-between; gap:8px;
+  }
+  .header-card .nav-btn{
+    background:none; border:1px solid color-mix(in srgb, var(--accent-ink) 40%, transparent);
+    color:var(--accent-ink); opacity:0.8;
+    width:28px; height:28px; border-radius:3px; font-size:16px; cursor:pointer; flex:0 0 auto;
+  }
+  .header-card .nav-btn:active{ opacity:1; }
+  .header-main{ text-align:center; }
+  .header-main .num{
+    font-family:"Zen Kaku Gothic New", sans-serif; font-size:12px; color:var(--accent-ink); opacity:0.75;
+    letter-spacing:0.15em; font-variant-numeric: tabular-nums;
+  }
+  .header-main .gz{
+    font-family:"Shippori Mincho", serif; font-size:27px; font-weight:700; color:var(--accent-ink); line-height:1.35;
+  }
+
+  .legend{
+    display:flex; flex-wrap:wrap; gap:6px 10px; margin-bottom:14px; font-size:12px; color:var(--sub);
+    align-items:center; border-top:1px solid var(--rule); border-bottom:1px solid var(--rule); padding-block:8px;
+  }
+  .legend .badge{ font-size:11px; }
+  .legend .marks{ margin-left:auto; letter-spacing:0.05em; }
+
+  .badge{
+    display:inline-block; padding:1px 6px; border-radius:3px; font-size:10.5px;
+    font-weight:700; color:#fbfaf5; white-space:nowrap;
+  }
+  .b-tensha{ background:var(--badge-tensha); }
+  .b-ichiryu{ background:var(--badge-ichiryu); }
+  .b-taian{ background:var(--badge-taian); }
+  .b-mi{ background:var(--badge-mi); }
+  .b-tora{ background:var(--badge-tora); }
+
+  .grid{
+    display:grid; grid-template-columns: repeat(7, 1fr); gap:5px;
+  }
+  .wd{
+    text-align:center; font-size:12px; font-weight:700; color:var(--sub); padding-bottom:4px;
+    letter-spacing:0.1em;
+  }
+  .wd.sun{ color:var(--sun); } .wd.sat{ color:var(--sat); }
+
+  .cell{
+    background:var(--card); border:1px solid var(--line); border-radius:3px;
+    min-height: 108px; padding:6px 6px 8px; display:flex; flex-direction:column; gap:3px;
+    position:relative;
+  }
+  .cell.empty{ background:transparent; border-color:transparent; }
+  .cell.today{ box-shadow: 0 0 0 2px var(--today-ring) inset; }
+
+  .cell .datenum{
+    font-size:13.5px; font-weight:700; font-variant-numeric: tabular-nums;
+  }
+  .cell.sun .datenum{ color:var(--sun); }
+  .cell.sat .datenum{ color:var(--sat); }
+  .cell .ganzhi{ font-family:"Shippori Mincho", serif; font-size:14px; color:var(--ink); }
+  .cell .sekki{ font-size:9.5px; color:var(--accent); font-weight:700; }
+  .cell .badges{ display:flex; flex-wrap:wrap; gap:2px; margin-top:1px; }
+
+  .nav-btn:focus-visible{ outline:2px solid var(--accent-ink); outline-offset:1px; }
+
+
+  @media (max-width: 520px){
+    body{ padding:12px 10px 28px; }
+    .wrap{ width:100%; }
+    .title{ font-size:13px; margin:0 0 12px; }
+    .headers{ display:block; margin-bottom:12px; }
+    .header-card{ width:100%; min-height:74px; margin-bottom:8px; padding:10px 14px; }
+    .header-main .num{ font-size:12px; }
+    .header-main .gz{ font-size:27px; }
+    .legend{ gap:6px 7px; margin-bottom:12px; padding-block:8px; }
+    .legend .badge{ font-size:10px; }
+    .ganzhi-hint{ width:100%; margin-left:0; text-align:right; font-size:10px; }
+    .grid{ gap:4px; }
+    .wd{ font-size:11px; padding-bottom:3px; }
+    .cell{ min-height:82px; padding:5px 4px 6px; gap:2px; }
+    .cell .datenum{ font-size:12px; }
+    .cell .ganzhi{ font-size:12px; }
+    .cell .sekki{ font-size:8.5px; }
+    .badge{ font-size:8.5px; padding:0 3px; }
+    .ganzhi-dialog{ padding:20px; }
+  }
+
+  .cell .ganzhi{ cursor:pointer; text-decoration:underline; text-decoration-style:dotted; text-underline-offset:3px; }
+  .ganzhi-hint{ font-size:11px; color:var(--sub); margin-left:auto; }
+  .ganzhi-modal{ position:fixed; inset:0; z-index:1000; display:none; align-items:center; justify-content:center; padding:20px; background:rgba(32,36,42,.42); }
+  .ganzhi-modal.open{ display:flex; }
+  .ganzhi-dialog{ width:min(430px,100%); background:var(--card); border:1px solid var(--line); border-radius:10px; padding:22px; box-shadow:0 18px 50px rgba(0,0,0,.18); position:relative; }
+  .ganzhi-close{ position:absolute; right:12px; top:10px; border:0; background:transparent; font-size:24px; color:var(--sub); cursor:pointer; }
+  .ganzhi-title{ font-family:"Shippori Mincho","Hiragino Mincho ProN",serif; font-size:23px; margin:0 32px 10px 0; }
+  .ganzhi-theme-label{ font-size:11px; color:var(--sub); letter-spacing:.08em; margin-top:8px; }
+  .ganzhi-theme{ font-weight:700; margin:3px 0 12px; }
+  .ganzhi-desc{ line-height:1.8; margin:0; }
+
+</style>
+
+<div class="wrap">
+  <p class="title">干支歴　KANSHI GOYOMI</p>
+  <div class="headers">
+    <div class="header-card">
+      <button class="nav-btn" id="yearPrev">‹</button>
+      <div class="header-main">
+        <div class="num" id="yearNum">----</div>
+        <div class="gz" id="yearGz">--</div>
+      </div>
+      <button class="nav-btn" id="yearNext">›</button>
+    </div>
+    <div class="header-card">
+      <button class="nav-btn" id="monthPrev">‹</button>
+      <div class="header-main">
+        <div class="num" id="monthNum">--</div>
+        <div class="gz" id="monthGz">--</div>
+      </div>
+      <button class="nav-btn" id="monthNext">›</button>
+    </div>
+  </div>
+
+  <div class="legend">
+    <span class="badge b-tensha">天赦</span>
+    <span class="badge b-ichiryu">一粒万倍</span>
+    <span class="badge b-taian">大安</span>
+    <span class="badge b-mi">巳/己巳</span>
+    <span class="badge b-tora">寅</span>
+    <span class="ganzhi-hint">干支をタップで今日のテーマ</span>
+  </div>
+
+  <div class="grid" id="weekdayRow"></div>
+  <div class="grid" id="calGrid" style="margin-top:6px;"></div>
+</div>
+
+<div class="ganzhi-modal" id="ganzhiModal" aria-hidden="true">
+  <div class="ganzhi-dialog" role="dialog" aria-modal="true" aria-labelledby="ganzhiModalTitle">
+    <button class="ganzhi-close" id="ganzhiClose" aria-label="閉じる">×</button>
+    <h2 class="ganzhi-title" id="ganzhiModalTitle"></h2>
+    <div class="ganzhi-theme-label">今日のテーマ</div>
+    <div class="ganzhi-theme" id="ganzhiModalTheme"></div>
+    <p class="ganzhi-desc" id="ganzhiModalDesc"></p>
+  </div>
+</div>
+
+<script>
+(function(){
+  "use strict";
+
+  // ---------- 干支計算コア（fortune_core.py の完全移植） ----------
+  function mod(a,n){ return ((a%n)+n)%n; }
+  function rad(x){ return x*Math.PI/180; }
+
+  var STEMS = "甲乙丙丁戊己庚辛壬癸";
+  var DAY_BRANCHES = "子丑寅卯辰巳午未申酉戌亥";
+  var MONTH_BRANCH_ORDER = "寅卯辰巳午未申酉戌亥子丑";
+  var REF_YEAR = 2026;
+  var REF_YEAR_STEM_IDX = STEMS.indexOf('丙');
+  var REF_YEAR_BRANCH_IDX = DAY_BRANCHES.indexOf('午');
+
+  var ICHIRYU_TABLE = {
+    "子": ["子","亥"], "丑": ["子","卯"], "寅": ["丑","午"], "卯": ["寅","酉"],
+    "辰": ["子","卯"], "巳": ["卯","辰"], "午": ["巳","午"], "未": ["午","酉"],
+    "申": ["子","未"], "酉": ["卯","申"], "戌": ["午","酉"], "亥": ["酉","戌"]
+  };
+  var TENSHA_SEASON = {
+    "寅":"戊寅","卯":"戊寅","辰":"戊寅","巳":"甲午","午":"甲午","未":"甲午",
+    "申":"戊申","酉":"戊申","戌":"戊申","亥":"甲子","子":"甲子","丑":"甲子"
+  };
+  var ROKUYO = ["大安","赤口","先勝","友引","先負","仏滅"];
+  var LUCKY_DAY_TEXT = {
+    "一粒万倍日": "何事も始めるとよい大吉日",
+    "天赦日": "1年で最も運のよい万事吉の日",
+    "大安": "六曜で最も良いとされる日",
+    "寅の日": "金運が舞い戻るとされる日",
+    "巳の日": "金運・財運アップの日",
+    "己巳の日": "弁財天の縁日で金運アップの日"
+  };
+  var LUCKY_DAY_ORDER = ["天赦日","一粒万倍日","大安","己巳の日","巳の日","寅の日"];
+
+  // GANZHI_MEANINGS_BEGIN - AUTO-GENERATED from ganzhi_meanings.json
+  var GANZHI_MEANINGS = {
+  "甲子": {
+    "reading": "きのえね",
+    "emoji": "🌱",
+    "element": "木",
+    "theme": [
+      "始まり",
+      "成長",
+      "挑戦"
+    ],
+    "description": "新しい可能性が芽生える日。好奇心を大切に、これから育てたいことへの第一歩を踏み出してみましょう。"
+  },
+  "乙丑": {
+    "reading": "きのとうし",
+    "emoji": "🌱",
+    "element": "木",
+    "theme": [
+      "忍耐",
+      "工夫",
+      "積み重ね"
+    ],
+    "description": "すぐに結果を求めず、工夫しながら根を張っていく日。小さな積み重ねを大切にすると、やがて確かな力になります。"
+  },
+  "丙寅": {
+    "reading": "ひのえとら",
+    "emoji": "🔥",
+    "element": "火",
+    "theme": [
+      "情熱",
+      "行動",
+      "発展"
+    ],
+    "description": "エネルギーを外へ向けて、積極的に動く日。考えるだけで終わらせず、興味を感じたことには思い切って挑戦してみましょう。"
+  },
+  "丁卯": {
+    "reading": "ひのとう",
+    "emoji": "🔥",
+    "element": "火",
+    "theme": [
+      "感性",
+      "魅力",
+      "表現"
+    ],
+    "description": "自分の感性や魅力を自然に表現する日。好きなものに触れたり、人との穏やかな交流を楽しむことで心の火が育ちます。"
+  },
+  "戊辰": {
+    "reading": "つちのえたつ",
+    "emoji": "⛰️",
+    "element": "土",
+    "theme": [
+      "基盤",
+      "安定",
+      "長期的成長"
+    ],
+    "description": "足元を固め、これからの土台を整える日。目先の結果を追うより、長い目で物事を考えることを大切に。"
+  },
+  "己巳": {
+    "reading": "つちのとみ",
+    "emoji": "⛰️",
+    "element": "土",
+    "theme": [
+      "知恵",
+      "育成",
+      "準備"
+    ],
+    "description": "知恵を活かしながら、物事をじっくり育てる日。状況をよく観察し、今後につながる準備を整えてみましょう。"
+  },
+  "庚午": {
+    "reading": "かのえうま",
+    "emoji": "💎",
+    "element": "金",
+    "theme": [
+      "決断",
+      "鍛錬",
+      "突破"
+    ],
+    "description": "プレッシャーを力に変え、自分を鍛える日。難しいことから逃げずに向き合うことで、一段成長できそうです。"
+  },
+  "辛未": {
+    "reading": "かのとひつじ",
+    "emoji": "💎",
+    "element": "金",
+    "theme": [
+      "洗練",
+      "自分磨き",
+      "価値"
+    ],
+    "description": "自分の良さを丁寧に磨いていく日。焦って目立とうとするより、細かな部分を整えることで本来の魅力が輝きます。"
+  },
+  "壬申": {
+    "reading": "みずのえさる",
+    "emoji": "💧",
+    "element": "水",
+    "theme": [
+      "変化",
+      "情報",
+      "柔軟性"
+    ],
+    "description": "新しい情報や変化を柔軟に取り入れる日。人との出会いや何気ない会話から、思わぬヒントが見つかりそうです。"
+  },
+  "癸酉": {
+    "reading": "みずのととり",
+    "emoji": "💧",
+    "element": "水",
+    "theme": [
+      "洞察",
+      "感性",
+      "整理"
+    ],
+    "description": "感覚を研ぎ澄ませ、物事を静かに見つめる日。身の回りや頭の中を整理すると、本当に必要なものが見えてきそうです。"
+  },
+  "甲戌": {
+    "reading": "きのえいぬ",
+    "emoji": "🌱",
+    "element": "木",
+    "theme": [
+      "信念",
+      "開拓",
+      "突破"
+    ],
+    "description": "自分の信念を持って道を切り開く日。簡単に進まないことがあっても、目標を見失わず一歩ずつ前へ進んでみましょう。"
+  },
+  "乙亥": {
+    "reading": "きのとい",
+    "emoji": "🌱",
+    "element": "木",
+    "theme": [
+      "柔軟",
+      "成長",
+      "受容"
+    ],
+    "description": "周囲の流れを受け入れながら、しなやかに成長する日。無理に答えを出さず、自然な流れに身を任せることで道が見えてきそうです。"
+  },
+  "丙子": {
+    "reading": "ひのえね",
+    "emoji": "🔥",
+    "element": "火",
+    "theme": [
+      "発想",
+      "調整",
+      "冷静さ"
+    ],
+    "description": "やりたい気持ちと冷静な判断のバランスを取る日。勢いだけで進まず、一度立ち止まって考えることで良いアイデアが生まれそうです。"
+  },
+  "丁丑": {
+    "reading": "ひのとうし",
+    "emoji": "🔥",
+    "element": "火",
+    "theme": [
+      "継続",
+      "育成",
+      "積み重ね"
+    ],
+    "description": "小さな努力を丁寧に積み重ねる日。すぐに成果が見えなくても、続けてきたことが少しずつ形になっていきます。"
+  },
+  "戊寅": {
+    "reading": "つちのえとら",
+    "emoji": "⛰️",
+    "element": "土",
+    "theme": [
+      "挑戦",
+      "突破",
+      "変化"
+    ],
+    "description": "今までの状況を変えるために動く日。慣れた場所に留まるより、勇気を出して新しい一歩を踏み出してみましょう。"
+  },
+  "己卯": {
+    "reading": "つちのとう",
+    "emoji": "⛰️",
+    "element": "土",
+    "theme": [
+      "調整",
+      "柔軟",
+      "協調"
+    ],
+    "description": "周囲とのバランスを取りながら進む日。自分の考えだけにこだわらず、人の意見を取り入れることで良い流れが生まれそうです。"
+  },
+  "庚辰": {
+    "reading": "かのえたつ",
+    "emoji": "💎",
+    "element": "金",
+    "theme": [
+      "基盤",
+      "決断",
+      "形成"
+    ],
+    "description": "これまで積み重ねてきたものを形にする日。土台を確認したうえで決断すると、次のステージへ進みやすくなります。"
+  },
+  "辛巳": {
+    "reading": "かのとみ",
+    "emoji": "💎",
+    "element": "金",
+    "theme": [
+      "洗練",
+      "鍛錬",
+      "見極め"
+    ],
+    "description": "自分を磨き、不要なものをそぎ落としていく日。少し厳しい経験の中にも、成長につながるヒントが隠れていそうです。"
+  },
+  "壬午": {
+    "reading": "みずのえうま",
+    "emoji": "💧",
+    "element": "水",
+    "theme": [
+      "情熱",
+      "冷静",
+      "バランス"
+    ],
+    "description": "勢いと冷静さの両方を大切にする日。気持ちが高ぶったときほど一度状況を見渡すことで、より良い方向へ進めそうです。"
+  },
+  "癸未": {
+    "reading": "みずのとひつじ",
+    "emoji": "💧",
+    "element": "水",
+    "theme": [
+      "内省",
+      "調整",
+      "休息"
+    ],
+    "description": "無理に前へ進まず、自分の心を整える日。少し立ち止まって振り返ることで、次に進む方向が見えてきそうです。"
+  },
+  "甲申": {
+    "reading": "きのえさる",
+    "emoji": "🌱",
+    "element": "木",
+    "theme": [
+      "変革",
+      "対応",
+      "成長"
+    ],
+    "description": "変化を受け入れながら、自分を成長させる日。思い通りに進まないときほど、やり方を変えることで新しい道が見えてきそうです。"
+  },
+  "乙酉": {
+    "reading": "きのととり",
+    "emoji": "🌱",
+    "element": "木",
+    "theme": [
+      "洗練",
+      "柔軟",
+      "選別"
+    ],
+    "description": "必要なものを選び、自分を整えていく日。余計なものを手放すことで、本来の魅力や長所がより際立ちそうです。"
+  },
+  "丙戌": {
+    "reading": "ひのえいぬ",
+    "emoji": "🔥",
+    "element": "火",
+    "theme": [
+      "実行",
+      "信頼",
+      "定着"
+    ],
+    "description": "自分の思いを行動に移し、形にしていく日。責任を持って取り組む姿勢が、周囲からの信頼にもつながります。"
+  },
+  "丁亥": {
+    "reading": "ひのとい",
+    "emoji": "🔥",
+    "element": "火",
+    "theme": [
+      "感性",
+      "内省",
+      "心の調整"
+    ],
+    "description": "感性が繊細になりやすい日。無理に答えを出そうとせず、静かな時間を作って自分の気持ちに耳を傾けてみましょう。"
+  },
+  "戊子": {
+    "reading": "つちのえね",
+    "emoji": "⛰️",
+    "element": "土",
+    "theme": [
+      "管理",
+      "準備",
+      "方向づけ"
+    ],
+    "description": "これからの流れを整える日。思いつくまま動くより、目標や予定を整理して進む方向を決めてみましょう。"
+  },
+  "己丑": {
+    "reading": "つちのとうし",
+    "emoji": "⛰️",
+    "element": "土",
+    "theme": [
+      "蓄積",
+      "継続",
+      "基礎固め"
+    ],
+    "description": "地道な積み重ねが力になる日。目立つ成果を求めるより、今できることを丁寧に続けて土台を固めましょう。"
+  },
+  "庚寅": {
+    "reading": "かのえとら",
+    "emoji": "💎",
+    "element": "金",
+    "theme": [
+      "決断",
+      "変革",
+      "突破"
+    ],
+    "description": "迷いを断ち切り、流れを変える日。必要のなくなったものに区切りをつけ、新しい方向へ一歩踏み出してみましょう。"
+  },
+  "辛卯": {
+    "reading": "かのとう",
+    "emoji": "💎",
+    "element": "金",
+    "theme": [
+      "選別",
+      "洗練",
+      "自分磨き"
+    ],
+    "description": "細かな部分を整え、自分を磨く日。身の回りや習慣を見直すことで、自分らしい魅力がさらに引き立ちそうです。"
+  },
+  "壬辰": {
+    "reading": "みずのえたつ",
+    "emoji": "💧",
+    "element": "水",
+    "theme": [
+      "変化",
+      "方向転換",
+      "流れの調整"
+    ],
+    "description": "大きな流れの変化を感じやすい日。予定にこだわりすぎず、状況を見ながら進む方向を柔軟に調整してみましょう。"
+  },
+  "癸巳": {
+    "reading": "みずのとみ",
+    "emoji": "💧",
+    "element": "水",
+    "theme": [
+      "洞察",
+      "冷静",
+      "見極め"
+    ],
+    "description": "静かに状況を観察し、本質を見極める日。すぐに結論を出さず、一度じっくり考えることで良い答えが見つかりそうです。"
+  },
+  "甲午": {
+    "reading": "きのえうま",
+    "emoji": "🌱",
+    "element": "木",
+    "theme": [
+      "情熱",
+      "成長",
+      "表現"
+    ],
+    "description": "やりたいことに情熱を注ぎ、自分の力を伸ばしていく日。遠慮しすぎず、思いやアイデアを積極的に表現してみましょう。"
+  },
+  "乙未": {
+    "reading": "きのとひつじ",
+    "emoji": "🌱",
+    "element": "木",
+    "theme": [
+      "協調",
+      "定着",
+      "育成"
+    ],
+    "description": "周囲と調和しながら、自分の居場所を育てる日。人とのつながりを大切にし、焦らず少しずつ関係や物事を深めていきましょう。"
+  },
+  "丙申": {
+    "reading": "ひのえさる",
+    "emoji": "🔥",
+    "element": "火",
+    "theme": [
+      "挑戦",
+      "機転",
+      "鍛錬"
+    ],
+    "description": "アイデアを実際に試しながら、自分の力を磨く日。失敗を恐れず動いてみることで、より良いやり方が見つかりそうです。"
+  },
+  "丁酉": {
+    "reading": "ひのととり",
+    "emoji": "🔥",
+    "element": "火",
+    "theme": [
+      "洗練",
+      "表現",
+      "自分磨き"
+    ],
+    "description": "自分の魅力や感性を丁寧に磨く日。細かな部分まで意識することで、あなたらしさがより美しく表現できそうです。"
+  },
+  "戊戌": {
+    "reading": "つちのえいぬ",
+    "emoji": "⛰️",
+    "element": "土",
+    "theme": [
+      "信念",
+      "安定",
+      "継続"
+    ],
+    "description": "自分の軸を大切にし、決めたことを着実に続ける日。周囲に流されず進みながらも、時には人の意見にも耳を傾けてみましょう。"
+  },
+  "己亥": {
+    "reading": "つちのとい",
+    "emoji": "⛰️",
+    "element": "土",
+    "theme": [
+      "調整",
+      "受容",
+      "心の整理"
+    ],
+    "description": "周囲の出来事を一度受け止め、自分の気持ちを整える日。無理に結論を出さず、心に余裕を持って過ごしてみましょう。"
+  },
+  "庚子": {
+    "reading": "かのえね",
+    "emoji": "💎",
+    "element": "金",
+    "theme": [
+      "転換",
+      "発想",
+      "始動"
+    ],
+    "description": "古い考えや習慣に区切りをつけ、新しい流れを作る日。気持ちを切り替えることで、次のアイデアや可能性が生まれてきそうです。"
+  },
+  "辛丑": {
+    "reading": "かのとうし",
+    "emoji": "💎",
+    "element": "金",
+    "theme": [
+      "洗練",
+      "蓄積",
+      "自分磨き"
+    ],
+    "description": "焦らず自分の力を磨いていく日。すぐに評価を求めるより、時間をかけて質を高めることを大切にしましょう。"
+  },
+  "壬寅": {
+    "reading": "みずのえとら",
+    "emoji": "💧",
+    "element": "水",
+    "theme": [
+      "発展",
+      "挑戦",
+      "可能性"
+    ],
+    "description": "新しい可能性を大きく育てる日。興味を感じたことには積極的に飛び込み、自分の世界を広げてみましょう。"
+  },
+  "癸卯": {
+    "reading": "みずのとう",
+    "emoji": "💧",
+    "element": "水",
+    "theme": [
+      "感性",
+      "柔軟",
+      "育成"
+    ],
+    "description": "感性と柔軟さを活かし、物事を静かに育てていく日。焦らず周囲の流れを読みながら、少しずつ前へ進んでみましょう。"
+  },
+  "甲辰": {
+    "reading": "きのえたつ",
+    "emoji": "🌱",
+    "element": "木",
+    "theme": [
+      "成長",
+      "開拓",
+      "目標"
+    ],
+    "description": "今より一段上を目指して成長する日。少し高い目標を掲げ、できることから一歩ずつ道を切り開いてみましょう。"
+  },
+  "乙巳": {
+    "reading": "きのとみ",
+    "emoji": "🌱",
+    "element": "木",
+    "theme": [
+      "工夫",
+      "発展",
+      "表現"
+    ],
+    "description": "柔軟な発想を形にしていく日。正面からぶつかるだけでなく、自分なりの工夫を加えることで物事が進みやすくなります。"
+  },
+  "丙午": {
+    "reading": "ひのえうま",
+    "emoji": "🔥",
+    "element": "火",
+    "theme": [
+      "情熱",
+      "行動",
+      "自己表現"
+    ],
+    "description": "情熱とエネルギーを思いきり発揮する日。やりたいことには積極的に挑戦し、自分の思いを素直に表現してみましょう。"
+  },
+  "丁未": {
+    "reading": "ひのとひつじ",
+    "emoji": "🔥",
+    "element": "火",
+    "theme": [
+      "思いやり",
+      "育成",
+      "定着"
+    ],
+    "description": "人や物事を優しく育てていく日。身近な人を気遣ったり、大切なことに丁寧に向き合うことで穏やかな流れが生まれます。"
+  },
+  "戊申": {
+    "reading": "つちのえさる",
+    "emoji": "⛰️",
+    "element": "土",
+    "theme": [
+      "実行",
+      "成果",
+      "合理性"
+    ],
+    "description": "これまで積み重ねてきたものを成果につなげる日。状況を冷静に見ながら、効率よく形にしていく方法を考えてみましょう。"
+  },
+  "己酉": {
+    "reading": "つちのととり",
+    "emoji": "⛰️",
+    "element": "土",
+    "theme": [
+      "整理",
+      "洗練",
+      "完成"
+    ],
+    "description": "身の回りや自分自身を丁寧に整える日。細かな部分まで見直すことで、より完成度の高い状態へ近づけそうです。"
+  },
+  "庚戌": {
+    "reading": "かのえいぬ",
+    "emoji": "💎",
+    "element": "金",
+    "theme": [
+      "決断",
+      "形成",
+      "責任"
+    ],
+    "description": "これまで積み上げてきたものを確かな形にする日。曖昧になっていたことに答えを出し、責任を持って次へ進んでみましょう。"
+  },
+  "辛亥": {
+    "reading": "かのとい",
+    "emoji": "💎",
+    "element": "金",
+    "theme": [
+      "感性",
+      "発想",
+      "内省"
+    ],
+    "description": "繊細な感性から新しい発想が生まれる日。静かな時間を作り、自分の内側に目を向けることで思わぬ気づきがありそうです。"
+  },
+  "壬子": {
+    "reading": "みずのえね",
+    "emoji": "💧",
+    "element": "水",
+    "theme": [
+      "情報",
+      "交流",
+      "可能性"
+    ],
+    "description": "新しい情報や可能性が広がる日。人との会話や情報収集を楽しみながら、次につながるヒントを探してみましょう。"
+  },
+  "癸丑": {
+    "reading": "みずのとうし",
+    "emoji": "💧",
+    "element": "水",
+    "theme": [
+      "蓄積",
+      "準備",
+      "忍耐"
+    ],
+    "description": "静かに力を蓄え、次に向けて準備する日。急いで成果を求めるより、今は基礎を整えることを大切にしましょう。"
+  },
+  "甲寅": {
+    "reading": "きのえとら",
+    "emoji": "🌱",
+    "element": "木",
+    "theme": [
+      "成長",
+      "挑戦",
+      "前進"
+    ],
+    "description": "成長する力を活かし、新しい一歩を踏み出す日。目標を決めたら、自分から積極的に動いて可能性を広げてみましょう。"
+  },
+  "乙卯": {
+    "reading": "きのとう",
+    "emoji": "🌱",
+    "element": "木",
+    "theme": [
+      "調和",
+      "成長",
+      "縁"
+    ],
+    "description": "人とのつながりを大切にしながら、しなやかに成長する日。柔らかなコミュニケーションが、新しいご縁や良い流れを運んでくれそうです。"
+  },
+  "丙辰": {
+    "reading": "ひのえたつ",
+    "emoji": "🔥",
+    "element": "火",
+    "theme": [
+      "実行",
+      "具体化",
+      "発展"
+    ],
+    "description": "理想を現実へ近づけるために動く日。思い描いていることを具体的な行動に変えることで、大きな一歩につながりそうです。"
+  },
+  "丁巳": {
+    "reading": "ひのとみ",
+    "emoji": "🔥",
+    "element": "火",
+    "theme": [
+      "洞察",
+      "集中",
+      "情熱"
+    ],
+    "description": "心の内側にある情熱を大切にする日。気になることへじっくり集中すると、自分なりの答えや新しい気づきが見えてきそうです。"
+  },
+  "戊午": {
+    "reading": "つちのえうま",
+    "emoji": "⛰️",
+    "element": "土",
+    "theme": [
+      "自信",
+      "行動",
+      "信頼"
+    ],
+    "description": "自分の力を信じ、堂々と行動する日。責任を持って物事に向き合うことで、周囲からの信頼にもつながります。"
+  },
+  "己未": {
+    "reading": "つちのとひつじ",
+    "emoji": "⛰️",
+    "element": "土",
+    "theme": [
+      "安心",
+      "育成",
+      "基盤"
+    ],
+    "description": "自分や身近な人が安心できる環境を整える日。焦って先へ進むより、足元を整えながら大切なものを育てていきましょう。"
+  },
+  "庚申": {
+    "reading": "かのえさる",
+    "emoji": "💎",
+    "element": "金",
+    "theme": [
+      "決断",
+      "改革",
+      "合理性"
+    ],
+    "description": "不要なものを整理し、物事を前へ進める日。迷っていたことに区切りをつけ、より良い方法へ思い切って切り替えてみましょう。"
+  },
+  "辛酉": {
+    "reading": "かのととり",
+    "emoji": "💎",
+    "element": "金",
+    "theme": [
+      "洗練",
+      "完成",
+      "魅力"
+    ],
+    "description": "自分の魅力や得意なことをさらに磨く日。細かな部分まで丁寧に仕上げることで、あなたらしい輝きがより際立ちそうです。"
+  },
+  "壬戌": {
+    "reading": "みずのえいぬ",
+    "emoji": "💧",
+    "element": "水",
+    "theme": [
+      "信念",
+      "調整",
+      "方向性"
+    ],
+    "description": "広い視野を持ちながら、自分の進む方向を確かめる日。さまざまな意見を取り入れつつ、最後は自分の軸を大切にしましょう。"
+  },
+  "癸亥": {
+    "reading": "みずのとい",
+    "emoji": "💧",
+    "element": "水",
+    "theme": [
+      "内省",
+      "感性",
+      "流れ"
+    ],
+    "description": "心の声に静かに耳を傾ける日。無理に答えを出そうとせず、自分の気持ちを整理しながら、これから進みたい方向を見つめてみましょう。"
+  }
+};
+
+  function jdn(y,m,d){
+    var a = Math.floor((14-m)/12);
+    var y2 = y+4800-a;
+    var m2 = m+12*a-3;
+    return d + Math.floor((153*m2+2)/5) + 365*y2 + Math.floor(y2/4) - Math.floor(y2/100) + Math.floor(y2/400) - 32045;
+  }
+  function dayGanzhi(y,m,d){
+    var j = jdn(y,m,d);
+    return { stem: STEMS[mod(j+9,10)], branch: DAY_BRANCHES[mod(j+1,12)] };
+  }
+
+  function julianDay(utcMs){
+    var dt = new Date(utcMs);
+    var y = dt.getUTCFullYear(), m = dt.getUTCMonth()+1;
+    var d = dt.getUTCDate() + (dt.getUTCHours() + dt.getUTCMinutes()/60 + dt.getUTCSeconds()/3600)/24;
+    if (m<=2){ y-=1; m+=12; }
+    var a = Math.floor(y/100);
+    var b = 2 - a + Math.floor(a/4);
+    return Math.floor(365.25*(y+4716)) + Math.floor(30.6001*(m+1)) + d + b - 1524.5;
+  }
+  function solarLongitude(utcMs){
+    var jd = julianDay(utcMs);
+    var T = (jd-2451545.0)/36525.0;
+    var L0 = 280.46646 + 36000.76983*T + 0.0003032*T*T;
+    var M = 357.52911 + 35999.05029*T - 0.0001537*T*T;
+    var Mrad = rad(M);
+    var C = (1.914602-0.004817*T-0.000014*T*T)*Math.sin(Mrad)
+      + (0.019993-0.000101*T)*Math.sin(2*Mrad)
+      + 0.000289*Math.sin(3*Mrad);
+    var trueLong = L0+C;
+    var omega = 125.04 - 1934.136*T;
+    var apparentLong = trueLong - 0.00569 - 0.00478*Math.sin(rad(omega));
+    return mod(apparentLong,360);
+  }
+  function findAngleCrossing(targetLambda, guessMs, searchDays){
+    searchDays = searchDays || 40;
+    var lo = guessMs - searchDays/2*86400000;
+    var hi = guessMs + searchDays/2*86400000;
+    function diff(ms){ return mod(solarLongitude(ms)-targetLambda+180,360)-180; }
+    var loV = diff(lo);
+    for (var i=0;i<60;i++){
+      var mid = lo + (hi-lo)/2;
+      var mv = diff(mid);
+      if ((mv<0)===(loV<0)){ lo=mid; loV=mv; } else { hi=mid; }
+    }
+    return lo + (hi-lo)/2;
+  }
+  function findTermCrossing(year, targetLambda, monthHint){
+    var guess = Date.UTC(year, monthHint-1, 1,0,0,0);
+    return findAngleCrossing(targetLambda, guess);
+  }
+  function jstYearOf(utcMs){
+    return new Date(utcMs + 9*3600000).getUTCFullYear();
+  }
+  function baziYear(utcMs){
+    var y = jstYearOf(utcMs);
+    var lichun = findTermCrossing(y, 315.0, 2);
+    return utcMs < lichun ? y-1 : y;
+  }
+  function monthGanzhiAt(utcMs){
+    var lam = solarLongitude(utcMs);
+    var monthIndex = mod(Math.floor((lam-315)/30),12);
+    var by = baziYear(utcMs);
+    var yearStemIdx = mod(REF_YEAR_STEM_IDX + (by-REF_YEAR), 10);
+    var startStemIdx = mod(2*mod(yearStemIdx,5)+2,10);
+    var monthStemIdx = mod(startStemIdx+monthIndex,10);
+    return { stem: STEMS[monthStemIdx], branch: MONTH_BRANCH_ORDER[monthIndex], by: by };
+  }
+  function isSekkiiriDay(y,m,d){
+    var startUtc = Date.UTC(y,m-1,d,0,0,0) - 9*3600000;
+    var endUtc = Date.UTC(y,m-1,d,23,59,59) - 9*3600000;
+    var before = monthGanzhiAt(startUtc);
+    var after = monthGanzhiAt(endUtc);
+    return { isSekki: (before.stem+before.branch)!==(after.stem+after.branch), after: after };
+  }
+  function yearGanzhiFromBy(by){
+    var yearStemIdx = mod(REF_YEAR_STEM_IDX+(by-REF_YEAR),10);
+    var yearBranchIdx = mod(REF_YEAR_BRANCH_IDX+(by-REF_YEAR),12);
+    return STEMS[yearStemIdx]+DAY_BRANCHES[yearBranchIdx];
+  }
+  function monthHeaderInfo(year,month){
+    var anchorUtc = Date.UTC(year,month-1,20,12,0,0) - 9*3600000;
+    var info = monthGanzhiAt(anchorUtc);
+    return {
+      monthGanzhi: info.stem+info.branch,
+      yearGanzhi: yearGanzhiFromBy(info.by),
+      by: info.by
+    };
+  }
+
+  // ---- 旧暦(朔)計算: 六曜(大安)判定専用 ----
+  function jdToUtcMs(jd){
+    jd = jd+0.5;
+    var Z = Math.floor(jd);
+    var F = jd-Z;
+    var A;
+    if (Z<2299161){ A=Z; } else { var alpha=Math.floor((Z-1867216.25)/36524.25); A=Z+1+alpha-Math.floor(alpha/4); }
+    var B = A+1524;
+    var C = Math.floor((B-122.1)/365.25);
+    var D = Math.floor(365.25*C);
+    var E = Math.floor((B-D)/30.6001);
+    var dayFloat = B-D-Math.floor(30.6001*E)+F;
+    var month = E<14 ? E-1 : E-13;
+    var year = month>2 ? C-4716 : C-4715;
+    var dayInt = Math.floor(dayFloat);
+    var frac = dayFloat-dayInt;
+    var hoursFloat = frac*24;
+    var hh = Math.floor(hoursFloat);
+    var mm = Math.floor((hoursFloat-hh)*60);
+    var ss = (hoursFloat-hh)*3600 - mm*60;
+    return Date.UTC(year, month-1, dayInt, hh, mm, Math.floor(ss));
+  }
+  function newMoon(k){
+    var T = k/1236.85;
+    var JDE = 2451550.09766 + 29.530588861*k + 0.00015437*T*T - 0.000000150*Math.pow(T,3) + 0.00000000073*Math.pow(T,4);
+    var M = rad(mod(2.5534+29.10535669*k-0.0000014*T*T,360));
+    var Mp = rad(mod(201.5643+385.81693528*k+0.0107582*T*T+0.00001238*Math.pow(T,3)-0.000000058*Math.pow(T,4),360));
+    var F = rad(mod(160.7108+390.67050284*k-0.0016118*T*T-0.00000227*Math.pow(T,3)+0.000000011*Math.pow(T,4),360));
+    var Omega = rad(mod(124.7746-1.56375588*k+0.0020672*T*T+0.00000215*Math.pow(T,3),360));
+    var E = 1-0.002516*T-0.0000074*T*T;
+    var corr = (
+      -0.40720*Math.sin(Mp) + 0.17241*E*Math.sin(M)
+      +0.01608*Math.sin(2*Mp) + 0.01039*Math.sin(2*F)
+      +0.00739*E*Math.sin(Mp-M) - 0.00514*E*Math.sin(Mp+M)
+      +0.00208*E*E*Math.sin(2*M) - 0.00111*Math.sin(Mp-2*F)
+      -0.00057*Math.sin(Mp+2*F) + 0.00056*E*Math.sin(2*Mp+M)
+      -0.00042*Math.sin(3*Mp) + 0.00042*E*Math.sin(M+2*F)
+      +0.00038*E*Math.sin(M-2*F) - 0.00024*E*Math.sin(2*Mp-M)
+      -0.00017*Math.sin(Omega) - 0.00007*Math.sin(Mp+2*M)
+      +0.00004*Math.sin(2*Mp-2*F) + 0.00004*Math.sin(3*M)
+      +0.00003*Math.sin(Mp+M-2*F) + 0.00003*Math.sin(2*Mp+2*F)
+      -0.00003*Math.sin(Mp+M+2*F) + 0.00003*Math.sin(Mp-M+2*F)
+      -0.00002*Math.sin(Mp-M-2*F) - 0.00002*Math.sin(3*Mp+M)
+      +0.00002*Math.sin(4*Mp)
+    );
+    return jdToUtcMs(JDE+corr);
+  }
+  function kForDate(utcMs){
+    var d = new Date(utcMs);
+    var y = d.getUTCFullYear() + d.getUTCMonth()/12.0;
+    return Math.floor((y-2000)*12.3685);
+  }
+  function newMoonOnOrBefore(utcMs){
+    var k = Math.floor(kForDate(utcMs));
+    while (newMoon(k) > utcMs) k -= 1;
+    while (newMoon(k+1) <= utcMs) k += 1;
+    return { k: k, ms: newMoon(k) };
+  }
+  function hasZhongqi(t0Ms,t1Ms){
+    var lam0 = solarLongitude(t0Ms);
+    var lam1 = solarLongitude(t1Ms);
+    var idx0 = Math.floor(lam0/30);
+    var lam1u = lam1>=lam0 ? lam1 : lam1+360;
+    var idx1 = Math.floor(lam1u/30);
+    return idx1>idx0;
+  }
+  function winterSolstice(year){
+    return findAngleCrossing(270.0, Date.UTC(year,11,22,0,0,0));
+  }
+  function buildLunarYearMonths(year){
+    var ws0 = winterSolstice(year-1);
+    var ws1 = winterSolstice(year);
+    var k0 = newMoonOnOrBefore(ws0).k;
+    var k1 = newMoonOnOrBefore(ws1).k;
+    var nMonths = k1-k0;
+    var hasLeap = nMonths===13;
+    var months=[];
+    var monthNum=11;
+    var leapAssigned=false;
+    var k=k0;
+    for (var idx=0; idx<nMonths; idx++){
+      var start=newMoon(k), end=newMoon(k+1);
+      var isLeap=false;
+      if (hasLeap && !leapAssigned && idx!==0 && !hasZhongqi(start,end)){ isLeap=true; leapAssigned=true; }
+      months.push({k:k,start:start,end:end,month:monthNum,leap:isLeap});
+      if (!isLeap){ monthNum+=1; if (monthNum>12) monthNum=1; }
+      k+=1;
+    }
+    return months;
+  }
+  function jstDateKey(utcMs){
+    var shifted = new Date(utcMs+9*3600000);
+    return Date.UTC(shifted.getUTCFullYear(), shifted.getUTCMonth(), shifted.getUTCDate());
+  }
+  var lunarCache = {};
+  function lunarDate(year,month,day){
+    var targetKey = Date.UTC(year,month-1,day);
+    var candidates = [year, year-1, year+1];
+    for (var ci=0; ci<candidates.length; ci++){
+      var y = candidates[ci];
+      if (!lunarCache[y]) lunarCache[y] = buildLunarYearMonths(y);
+      var months = lunarCache[y];
+      for (var mi=0; mi<months.length; mi++){
+        var m = months[mi];
+        var startKey = jstDateKey(m.start);
+        var endKey = jstDateKey(m.end);
+        if (startKey<=targetKey && targetKey<endKey){
+          var dayNum = Math.round((targetKey-startKey)/86400000)+1;
+          return { month:m.month, day:dayNum, leap:m.leap };
+        }
+      }
+    }
+    throw new Error("lunar date not found: "+year+"-"+month+"-"+day);
+  }
+  function rokuyo(year,month,day){
+    var ld = lunarDate(year,month,day);
+    return ROKUYO[mod(ld.month+ld.day,6)];
+  }
+  function luckyDaysFor(year,month,day){
+    var g = dayGanzhi(year,month,day);
+    var ganzhi = g.stem+g.branch;
+    var notifyUtc = Date.UTC(year,month-1,day,7,0,0) - 9*3600000;
+    var mg = monthGanzhiAt(notifyUtc);
+    var monthBranch = mg.branch;
+    var result = [];
+    if (ganzhi === TENSHA_SEASON[monthBranch]) result.push("天赦日");
+    if (ICHIRYU_TABLE[monthBranch].indexOf(g.branch) !== -1) result.push("一粒万倍日");
+    if (rokuyo(year,month,day)==="大安") result.push("大安");
+    if (ganzhi==="己巳") result.push("己巳の日");
+    else if (g.branch==="巳") result.push("巳の日");
+    if (g.branch==="寅") result.push("寅の日");
+    return result;
+  }
+  function badgeClassFor(name){
+    if (name==="天赦日") return "b-tensha";
+    if (name==="一粒万倍日") return "b-ichiryu";
+    if (name==="大安") return "b-taian";
+    if (name==="己巳の日" || name==="巳の日") return "b-mi";
+    if (name==="寅の日") return "b-tora";
+    return "";
+  }
+  function badgeShortFor(name){
+    if (name==="天赦日") return "天赦";
+    if (name==="一粒万倍日") return "一粒万倍";
+    if (name==="大安") return "大安";
+    if (name==="己巳の日") return "己巳";
+    if (name==="巳の日") return "巳";
+    if (name==="寅の日") return "寅";
+    return name;
+  }
+
+  // ---------- カレンダー描画 ----------
+  var WEEKDAY_LABELS = ["日","月","火","水","木","金","土"];
+  var now = new Date();
+  var nowJst = new Date(now.getTime() + 9*3600000);
+  var todayY = nowJst.getUTCFullYear(), todayM = nowJst.getUTCMonth()+1, todayD = nowJst.getUTCDate();
+
+  var state = { year: todayY, month: todayM };
+
+  function daysInMonth(y,m){ return new Date(Date.UTC(y, m, 0)).getUTCDate(); }
+
+  function openGanzhiModal(ganzhi){
+    var info = GANZHI_MEANINGS[ganzhi];
+    if (!info) return;
+    document.getElementById("ganzhiModalTitle").textContent = info.emoji + " " + ganzhi + "（" + info.reading + "）";
+    document.getElementById("ganzhiModalTheme").textContent = info.theme.join("・");
+    document.getElementById("ganzhiModalDesc").textContent = info.description;
+    var modal = document.getElementById("ganzhiModal");
+    modal.classList.add("open");
+    modal.setAttribute("aria-hidden","false");
+  }
+  function closeGanzhiModal(){
+    var modal = document.getElementById("ganzhiModal");
+    modal.classList.remove("open");
+    modal.setAttribute("aria-hidden","true");
+  }
+
+  function renderWeekdayRow(){
+    var el = document.getElementById("weekdayRow");
+    el.innerHTML = "";
+    for (var i=0;i<7;i++){
+      var d = document.createElement("div");
+      d.className = "wd" + (i===0?" sun":(i===6?" sat":""));
+      d.textContent = WEEKDAY_LABELS[i];
+      el.appendChild(d);
+    }
+  }
+
+  function renderHeaders(){
+    var mh = monthHeaderInfo(state.year, state.month);
+    document.getElementById("yearNum").textContent = state.year + "年";
+    document.getElementById("yearGz").textContent = mh.yearGanzhi;
+    document.getElementById("monthNum").textContent = state.month + "月";
+    document.getElementById("monthGz").textContent = mh.monthGanzhi;
+  }
+
+  function renderGrid(){
+    var grid = document.getElementById("calGrid");
+    grid.innerHTML = "";
+    var y = state.year, m = state.month;
+    var firstWeekday = new Date(Date.UTC(y, m-1, 1)).getUTCDay();
+    var nDays = daysInMonth(y,m);
+
+    for (var i=0;i<firstWeekday;i++){
+      var empty = document.createElement("div");
+      empty.className = "cell empty";
+      grid.appendChild(empty);
+    }
+
+    for (var d=1; d<=nDays; d++){
+      var wd = new Date(Date.UTC(y, m-1, d)).getUTCDay();
+      var cell = document.createElement("div");
+      cell.className = "cell" + (wd===0?" sun":(wd===6?" sat":"")) +
+        ((y===todayY && m===todayM && d===todayD) ? " today" : "");
+
+      var dateLine = document.createElement("div");
+      dateLine.className = "datenum";
+      dateLine.textContent = d + "(" + WEEKDAY_LABELS[wd] + ")";
+      cell.appendChild(dateLine);
+
+      var g = dayGanzhi(y,m,d);
+      var gzLine = document.createElement("div");
+      gzLine.className = "ganzhi";
+      gzLine.textContent = g.stem + g.branch;
+      gzLine.setAttribute("role","button");
+      gzLine.setAttribute("tabindex","0");
+      gzLine.setAttribute("aria-label",(g.stem + g.branch) + "の意味を見る");
+      gzLine.addEventListener("click", function(){ openGanzhiModal(this.textContent); });
+      gzLine.addEventListener("keydown", function(e){ if (e.key === "Enter" || e.key === " "){ e.preventDefault(); openGanzhiModal(this.textContent); } });
+      cell.appendChild(gzLine);
+
+      var sekki = isSekkiiriDay(y,m,d);
+      if (sekki.isSekki){
+        var sekkiLine = document.createElement("div");
+        sekkiLine.className = "sekki";
+        sekkiLine.textContent = "節入り→" + sekki.after.stem + sekki.after.branch;
+        cell.appendChild(sekkiLine);
+      }
+
+      var lucky = luckyDaysFor(y,m,d);
+      if (lucky.length){
+        var ordered = LUCKY_DAY_ORDER.filter(function(n){ return lucky.indexOf(n)!==-1; });
+        var badgesWrap = document.createElement("div");
+        badgesWrap.className = "badges";
+        ordered.forEach(function(name){
+          var b = document.createElement("span");
+          b.className = "badge " + badgeClassFor(name);
+          b.textContent = badgeShortFor(name);
+          b.title = name + "：" + (LUCKY_DAY_TEXT[name] || "");
+          badgesWrap.appendChild(b);
+        });
+        cell.appendChild(badgesWrap);
+      }
+
+
+      grid.appendChild(cell);
+    }
+  }
+
+  function render(){
+    renderHeaders();
+    renderGrid();
+  }
+
+  function loadMonth(){ render(); }
+
+  document.getElementById("yearPrev").addEventListener("click", function(){
+    state.year -= 1; loadMonth();
+  });
+  document.getElementById("yearNext").addEventListener("click", function(){
+    state.year += 1; loadMonth();
+  });
+  document.getElementById("monthPrev").addEventListener("click", function(){
+    state.month -= 1;
+    if (state.month < 1){ state.month = 12; state.year -= 1; }
+    loadMonth();
+  });
+  document.getElementById("monthNext").addEventListener("click", function(){
+    state.month += 1;
+    if (state.month > 12){ state.month = 1; state.year += 1; }
+    loadMonth();
+  });
+
+  document.getElementById("ganzhiClose").addEventListener("click", closeGanzhiModal);
+  document.getElementById("ganzhiModal").addEventListener("click", function(e){ if (e.target === this) closeGanzhiModal(); });
+  document.addEventListener("keydown", function(e){ if (e.key === "Escape") closeGanzhiModal(); });
+
+  renderWeekdayRow();
+  loadMonth();
+})();
+</script>
