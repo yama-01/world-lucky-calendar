@@ -126,6 +126,11 @@
   .ganzhi-theme-label{ font-size:11px; color:var(--sub); letter-spacing:.08em; margin-top:8px; }
   .ganzhi-theme{ font-weight:700; margin:3px 0 12px; }
   .ganzhi-desc{ line-height:1.8; margin:0; }
+  .ganzhi-dialog{ max-height:calc(100dvh - 40px); overflow-y:auto; }
+  .lucky-modal-section{ margin-top:18px; padding-top:15px; border-top:1px solid var(--line); }
+  .lucky-modal-item{ margin-top:10px; line-height:1.7; }
+  .lucky-modal-name{ font-weight:700; }
+  .lucky-modal-description{ font-size:13px; color:var(--sub); }
 
 </style>
 
@@ -170,6 +175,7 @@
     <div class="ganzhi-theme-label">今日のテーマ</div>
     <div class="ganzhi-theme" id="ganzhiModalTheme"></div>
     <p class="ganzhi-desc" id="ganzhiModalDesc"></p>
+    <section class="lucky-modal-section" id="ganzhiModalLucky" hidden><strong>この日の開運日</strong><div id="ganzhiModalLuckyItems"></div></section>
   </div>
 </div>
 
@@ -1123,12 +1129,32 @@
 
   function daysInMonth(y,m){ return new Date(Date.UTC(y, m, 0)).getUTCDate(); }
 
-  function openGanzhiModal(ganzhi){
+  function openGanzhiModal(ganzhi, dateText){
     var info = GANZHI_MEANINGS[ganzhi];
     if (!info) return;
     document.getElementById("ganzhiModalTitle").textContent = info.emoji + " " + ganzhi + "（" + info.reading + "）";
     document.getElementById("ganzhiModalTheme").textContent = info.theme.join("・");
     document.getElementById("ganzhiModalDesc").textContent = info.description;
+    var parts = dateText.split("-").map(Number);
+    var lucky = luckyDaysFor(parts[0], parts[1], parts[2]);
+    var ordered = LUCKY_DAY_ORDER.filter(function(name){ return lucky.indexOf(name) !== -1; });
+    var section = document.getElementById("ganzhiModalLucky");
+    var items = document.getElementById("ganzhiModalLuckyItems");
+    items.textContent = "";
+    section.hidden = ordered.length === 0;
+    ordered.forEach(function(name){
+      var item = document.createElement("div");
+      item.className = "lucky-modal-item";
+      var title = document.createElement("div");
+      title.className = "lucky-modal-name";
+      title.textContent = "✦ " + name;
+      var desc = document.createElement("div");
+      desc.className = "lucky-modal-description";
+      desc.textContent = LUCKY_DAY_TEXT[name] || "";
+      item.appendChild(title);
+      item.appendChild(desc);
+      items.appendChild(item);
+    });
     var modal = document.getElementById("ganzhiModal");
     modal.classList.add("open");
     modal.setAttribute("aria-hidden","false");
@@ -1189,8 +1215,9 @@
       gzLine.setAttribute("role","button");
       gzLine.setAttribute("tabindex","0");
       gzLine.setAttribute("aria-label",(g.stem + g.branch) + "の意味を見る");
-      gzLine.addEventListener("click", function(){ openGanzhiModal(this.textContent); });
-      gzLine.addEventListener("keydown", function(e){ if (e.key === "Enter" || e.key === " "){ e.preventDefault(); openGanzhiModal(this.textContent); } });
+      gzLine.dataset.date = [y,m,d].join("-");
+      gzLine.addEventListener("click", function(){ openGanzhiModal(this.textContent, this.dataset.date); });
+      gzLine.addEventListener("keydown", function(e){ if (e.key === "Enter" || e.key === " "){ e.preventDefault(); openGanzhiModal(this.textContent, this.dataset.date); } });
       cell.appendChild(gzLine);
 
       var sekki = isSekkiiriDay(y,m,d);
