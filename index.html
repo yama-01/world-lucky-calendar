@@ -1139,10 +1139,38 @@
   // Intlの中国暦は韓国旧暦と稀に日付差が生じるため、韓国暦の代替計算として暫定利用。
   var koreanLunarFormatter;
   try { koreanLunarFormatter=new Intl.DateTimeFormat("en-u-ca-chinese",{timeZone:"Asia/Seoul",day:"numeric",month:"numeric"}); } catch(e){}
+  // 韓国天文研究院(KASI)公表の月朔日・大小を優先。収録外は従来の暫定計算にフォールバック。
+  // 公式照合: https://astro.kasi.re.kr/kor/life/post/calendarData?search_year=2026
+  //           https://astro.kasi.re.kr/kor/life/post/calendarData?search_year=2028
+  var KOREAN_LUNAR_MONTHS=[
+    ["2026-02-17",30],["2026-03-19",29],["2026-04-17",30],
+    ["2026-05-17",29],["2026-06-15",29],["2026-07-14",30],
+    ["2026-08-13",29],["2026-09-11",30],["2026-10-11",29],
+    ["2026-11-09",30],["2026-12-09",30],["2027-01-08",30],
+    ["2028-01-27",29],["2028-02-25",30],["2028-03-26",30],
+    ["2028-04-25",30],["2028-05-24",30],["2028-06-23",29],
+    ["2028-07-22",29],["2028-08-20",29],["2028-09-19",29],
+    ["2028-10-18",29],["2028-11-16",30],["2028-12-16",29],
+    ["2029-01-15",29]
+  ];
+  function koreanOfficialLunarDay(y,m,d){
+    var target=Date.UTC(y,m-1,d);
+    for(var i=0;i<KOREAN_LUNAR_MONTHS.length;i++){
+      var row=KOREAN_LUNAR_MONTHS[i];
+      var p=row[0].split("-").map(Number);
+      var start=Date.UTC(p[0],p[1]-1,p[2]);
+      var offset=Math.round((target-start)/86400000);
+      if(offset>=0&&offset<row[1])return offset+1;
+    }
+    return null;
+  }
   function koreanLuckyFor(y,m,d){
-    if (!koreanLunarFormatter) return false;
-    var parts=koreanLunarFormatter.formatToParts(new Date(Date.UTC(y,m-1,d,3)));
-    var day=Number((parts.find(function(p){return p.type==="day";})||{}).value);
+    var day=koreanOfficialLunarDay(y,m,d);
+    if(day===null){
+      if (!koreanLunarFormatter) return false;
+      var parts=koreanLunarFormatter.formatToParts(new Date(Date.UTC(y,m-1,d,3)));
+      day=Number((parts.find(function(p){return p.type==="day";})||{}).value);
+    }
     return [9,10,19,20,29,30].indexOf(day)!==-1;
   }
   // ベトナム黄道日: 朔と中気をベトナム標準時(UTC+7)の日付で扱う。
