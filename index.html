@@ -198,7 +198,7 @@
   <div role="dialog" aria-modal="true" aria-labelledby="periodTitle" style="background:#fff;max-width:440px;margin:15vh auto;padding:24px;border-radius:12px;line-height:1.8;">
     <button type="button" id="periodClose" style="float:right;font-size:24px;background:none;border:0;cursor:pointer;" aria-label="閉じる">×</button>
     <h2 id="periodTitle" style="font-size:21px;margin:0 0 15px;"></h2>
-    <p id="periodDescription"></p>
+    <p id="periodDescription"></p><p id="periodNote" style="font-size:12px;color:#737b87;line-height:1.7;margin-top:18px;">※これは干支の十干を中心に読み解いた、万人向けの暦のテーマです。個人の運勢を断定するものではありません。</p>
   </div>
 </div>
 <div class="ganzhi-modal" id="ganzhiModal" aria-hidden="true">
@@ -1727,7 +1727,7 @@
     var t = periodTheme(gz);
     var num = document.getElementById(kind==="year"?"yearNum":"monthNum").textContent;
     document.getElementById("periodTitle").textContent = num+"・"+gz+"のテーマ";
-    document.getElementById("periodDescription").textContent = t[0]+" — "+t[1]+" これは干支の十干を中心に読み解いた、万人向けの暦のテーマです。個人の運勢を断定するものではありません。";
+    document.getElementById("periodDescription").textContent = t[0]+" — "+t[1];
     document.getElementById("periodModal").hidden = false;
   }
 
