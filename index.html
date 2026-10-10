@@ -1,5 +1,5 @@
 <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
-<title>世界の開運カレンダー｜日本・中国・韓国・ベトナム</title>
+<title>世界の開運カレンダー｜日本・中国・韓国・ベトナム・タイ・インド</title>
 <link rel="icon" href="data:image/svg+xml,<svg xmlns=%22http://www.w3.org/2000/svg%22 viewBox=%220 0 100 100%22><text y=%22.9em%22 font-size=%2290%22>🗓️</text></svg>">
 <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Shippori+Mincho:wght@500;700&family=Zen+Kaku+Gothic+New:wght@400;500;700&display=swap">
 <style>
@@ -175,7 +175,7 @@
     <span class="ganzhi-hint">🇯🇵 日本・🇨🇳 中国・🇰🇷 韓国｜日付をタップで詳細</span>
   </div>
 
-  <details class="calendar-notes"><summary>暦の計算・表示について</summary><p>各国の伝統的な暦や吉日の考え方を紹介しています。吉凶は文化・目的によって異なり、効果を保証するものではありません。韓国の旧暦判定には中国暦を代用しており、現地の暦と日付が異なる場合があります。タイ・インドの吉日は、現地の暦に基づく日付確認後に追加予定です。</p></details>
+  <details class="calendar-notes"><summary>暦の計算・表示について</summary><p>各国の伝統的な暦や吉日の考え方を紹介しています。吉凶は文化・目的によって異なり、効果を保証するものではありません。韓国の旧暦判定には中国暦を代用しており、現地の暦と日付が異なる場合があります。タイはカラヨークの曜日基準で吉凶が重なる日を除外しています。インドはニューデリー基準で確認した2026〜2028年の日付を掲載しています。</p></details>
 
   <div class="grid" id="weekdayRow"></div>
   <div class="grid" id="calGrid" style="margin-top:6px;"></div>
@@ -1192,11 +1192,28 @@
     if(index===mod(first+4,12))return {name:"金匱黄道日（Kim Quỹ）",desc:"金運や商売、財産に関わる吉事に縁起が良いとされる日。",category:"💰 金運・商売"};
     return null;
   }
+  // タイ・カラヨーク（曜日基準）。4月16日を年の切替日とする簡易日付判定。
+  // ワン・トンチャイとローカウィナートが同じ曜日の場合は掲載しない。
+  function thaiThongchaiFor(y,m,d){
+    var cs=y-638-((m<4||(m===4&&d<16))?1:0);
+    var good=mod(cs*10+3,7);
+    var bad=mod(cs+1120,7);
+    var weekday=new Date(Date.UTC(y,m-1,d)).getUTCDay();
+    return good!==bad && weekday===good;
+  }
+  // ニューデリーを基準とした現地暦の照合済み日付（2026〜2028年）。
+  // 2029年以降はティティ・日の出に基づく検証が必要なため自動推測しない。
+  var INDIA_AKSHAYA_DATES={"2026-04-19":true,"2027-05-09":true,"2028-04-27":true};
+  function indiaAkshayaFor(y,m,d){
+    return !!INDIA_AKSHAYA_DATES[y+"-"+String(m).padStart(2,"0")+"-"+String(d).padStart(2,"0")];
+  }
   function worldInfoFor(y,m,d){
     var result=[];
     var name=kenjoFor(y,m,d);
     result.push({country:"🇨🇳 中国",name:"建除十二神・"+name,desc:KENJO_INFO[name][0],category:KENJO_INFO[name][1],featured:KENJO_FEATURED.has(name)});
     if(koreanLuckyFor(y,m,d))result.push({country:"🇰🇷 韓国",name:"ソンオムヌンナル（손 없는 날）",desc:"旧暦の日付の末尾が9または0となる、引っ越しや婚礼などの縁起を担ぐ日。",category:"🌱 始まり・挑戦・❤️ 人間関係",featured:true});
+    if(thaiThongchaiFor(y,m,d))result.push({country:"🇹🇭 タイ",name:"ワン・トンチャイ（วันธงชัย）",desc:"タイの伝統的な暦で、開業や新しい挑戦などに縁起が良いとされる日。凶日「ローカウィナート」と重なる曜日は表示していません。",category:"🌱 成功・開業",featured:true});
+    if(indiaAkshayaFor(y,m,d))result.push({country:"🇮🇳 インド",name:"アクシャヤ・トリティヤ（Akshaya Tritiya）",desc:"繁栄や富が増えることを願い、金の購入や新しい事業の開始などに縁起が良いとされる日。インド・ニューデリー基準の日付です。",category:"💰 金運・繁栄",featured:true});
     var vn=vietnamLuckyFor(y,m,d);
     if(vn)result.push({country:"🇻🇳 ベトナム",name:vn.name,desc:vn.desc,category:vn.category,featured:true});
     return result;
