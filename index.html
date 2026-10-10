@@ -1229,9 +1229,10 @@
     var weekday=new Date(Date.UTC(y,m-1,d)).getUTCDay();
     return good!==bad && weekday===good;
   }
-  // ニューデリーを基準とした現地暦の照合済み日付（2026〜2028年）。
-  // 2029年以降はティティ・日の出に基づく検証が必要なため自動推測しない。
-  var INDIA_AKSHAYA_DATES={"2026-04-19":true,"2027-05-09":true,"2028-04-27":true};
+  // ニューデリー基準の現地パンチャン掲載日付（2026〜2034年）。
+  // 出典: https://www.drikpanchang.com/festivals/akshaya-tritiya/akshaya-tritiya-date-time.html?geoname-id=1261481&year=2027
+  // 未照合の年は推測して表示しない。地域差があるためニューデリー基準と明示する。
+  var INDIA_AKSHAYA_DATES={"2026-04-19":true,"2027-05-09":true,"2028-04-27":true,"2029-05-16":true,"2030-05-05":true,"2031-04-24":true,"2032-05-12":true,"2033-05-01":true,"2034-04-21":true};
   function indiaAkshayaFor(y,m,d){
     return !!INDIA_AKSHAYA_DATES[y+"-"+String(m).padStart(2,"0")+"-"+String(d).padStart(2,"0")];
   }
