@@ -65,6 +65,7 @@
   .b-taian{ background:var(--badge-taian); }
   .b-mi{ background:var(--badge-mi); }
   .b-tora{ background:var(--badge-tora); }
+  .b-other{background:#657785}
   .b-more{background:#777f88}
   .world-flags{font-size:11px;line-height:1.2;letter-spacing:1px;margin-top:2px}
   .cell:not(.empty){cursor:pointer}
@@ -1168,6 +1169,7 @@
     if (name==="大安") return "b-taian";
     if (name==="己巳の日" || name==="巳の日") return "b-mi";
     if (name==="寅の日") return "b-tora";
+    if (name==="大明日" || name==="母倉日" || name==="月徳日") return "b-other";
     return "";
   }
   function badgeShortFor(name){
@@ -1301,14 +1303,13 @@
         var ordered = LUCKY_DAY_ORDER.filter(function(n){ return lucky.indexOf(n)!==-1; });
         var badgesWrap = document.createElement("div");
         badgesWrap.className = "badges";
-        ordered.slice(0,2).forEach(function(name){
+        ordered.forEach(function(name){
           var b = document.createElement("span");
           b.className = "badge " + badgeClassFor(name);
           b.textContent = badgeShortFor(name);
           b.title = name + "：" + (LUCKY_DAY_TEXT[name] || "");
           badgesWrap.appendChild(b);
         });
-        if(ordered.length>2){var more=document.createElement("span");more.className="badge b-more";more.textContent="+"+(ordered.length-2);badgesWrap.appendChild(more);}
         cell.appendChild(badgesWrap);
       }
 
