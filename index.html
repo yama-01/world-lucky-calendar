@@ -1213,7 +1213,7 @@
     var items = document.getElementById("ganzhiModalLuckyItems");
     items.textContent = "";
     var world=worldInfoFor(parts[0],parts[1],parts[2]);
-    section.hidden = ordered.length === 0 && world.length === 0;
+    section.hidden = ordered.length === 0 && !world.some(function(w){ return w.featured; });
     ordered.forEach(function(name){
       var item = document.createElement("div");
       item.className = "lucky-modal-item";
