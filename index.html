@@ -49,6 +49,9 @@
     font-family:"Shippori Mincho", serif; font-size:27px; font-weight:700; color:var(--accent-ink); line-height:1.35;
   }
 
+  .period-theme{font-size:12px;font-weight:700;color:#f5e0b4;margin-top:3px;line-height:1.4;}
+  .header-main{cursor:pointer;}
+  .header-main:focus-visible{outline:2px solid #f5e0b4;outline-offset:5px;border-radius:4px;}
   .legend{
     display:flex; flex-wrap:wrap; gap:6px 10px; margin-bottom:14px; font-size:12px; color:var(--sub);
     align-items:center; border-top:1px solid var(--rule); border-bottom:1px solid var(--rule); padding-block:8px;
@@ -96,8 +99,8 @@
   }
   .cell.sun .datenum{ color:var(--sun); }
   .cell.sat .datenum{ color:var(--sat); }
-  .cell .ganzhi{ font-family:"Shippori Mincho", serif; font-size:14px; color:var(--ink); }
-  .cell .daily-label{ font-size:10px; line-height:1.3; color:var(--accent); font-weight:700; overflow-wrap:anywhere; }
+  .cell .ganzhi{ font-family:"Shippori Mincho", serif; font-size:11px; color:var(--sub); opacity:.85; }
+  .cell .daily-label{ font-size:11px; line-height:1.3; color:var(--accent); font-weight:700; overflow-wrap:anywhere; }
   .cell .sekki{ font-size:9.5px; color:var(--accent); font-weight:700; }
   .cell .badges{ display:flex; flex-wrap:wrap; gap:2px; margin-top:1px; }
 
@@ -158,6 +161,7 @@
       <div class="header-main">
         <div class="num" id="yearNum">----</div>
         <div class="gz" id="yearGz">--</div>
+        <div class="period-theme" id="yearTheme"></div>
       </div>
       <button class="nav-btn" id="yearNext">›</button>
     </div>
@@ -166,6 +170,7 @@
       <div class="header-main">
         <div class="num" id="monthNum">--</div>
         <div class="gz" id="monthGz">--</div>
+        <div class="period-theme" id="monthTheme"></div>
       </div>
       <button class="nav-btn" id="monthNext">›</button>
     </div>
@@ -189,6 +194,13 @@
   <div class="grid" id="calGrid" style="margin-top:6px;"></div>
 </div>
 
+<div id="periodModal" hidden style="position:fixed;inset:0;background:rgba(0,0,0,.5);z-index:1000;padding:20px;overflow:auto;">
+  <div role="dialog" aria-modal="true" aria-labelledby="periodTitle" style="background:#fff;max-width:440px;margin:15vh auto;padding:24px;border-radius:12px;line-height:1.8;">
+    <button type="button" id="periodClose" style="float:right;font-size:24px;background:none;border:0;cursor:pointer;" aria-label="閉じる">×</button>
+    <h2 id="periodTitle" style="font-size:21px;margin:0 0 15px;"></h2>
+    <p id="periodDescription"></p>
+  </div>
+</div>
 <div class="ganzhi-modal" id="ganzhiModal" aria-hidden="true">
   <div class="ganzhi-dialog" role="dialog" aria-modal="true" aria-labelledby="ganzhiModalTitle">
     <button class="ganzhi-close" id="ganzhiClose" aria-label="閉じる">×</button>
@@ -1693,12 +1705,51 @@
     }
   }
 
+  // 年・月は個人運勢ではなく、干支の象意に基づく暦の共通テーマ。
+  var PERIOD_STEM = {
+    "甲":["🌱 成長と開拓","新しい目標を立て、着実に成長することを意識する時期です。"],
+    "乙":["🌱 調和と工夫","柔軟な発想と周囲との協力を大切にする時期です。"],
+    "丙":["🔥 情熱と行動","興味のあることに前向きに取り組み、思いを表現する時期です。"],
+    "丁":["🔥 感性と集中","小さな気づきや大切なことに丁寧に向き合う時期です。"],
+    "戊":["⛰️ 安定と継続","足元を固め、決めたことを着実に続ける時期です。"],
+    "己":["⛰️ 育成と調整","身近な環境や関係を整え、ゆっくり育てる時期です。"],
+    "庚":["💎 決断と改革","不要なものを見直し、新しい形へ切り替える時期です。"],
+    "辛":["💎 洗練と完成","細かな部分に目を向け、質を高めていく時期です。"],
+    "壬":["💧 交流と可能性","広い視野を持ち、新しい情報や人との交流を楽しむ時期です。"],
+    "癸":["💧 内省と準備","自分の気持ちを整え、次の一歩に備える時期です。"]
+  };
+  function periodTheme(ganzhi){
+    var basic = PERIOD_STEM[ganzhi.charAt(0)];
+    return basic || ["暦のテーマ",""];
+  }
+  function openPeriodTheme(kind){
+    var gz = document.getElementById(kind==="year"?"yearGz":"monthGz").textContent;
+    var t = periodTheme(gz);
+    var num = document.getElementById(kind==="year"?"yearNum":"monthNum").textContent;
+    document.getElementById("periodTitle").textContent = num+"・"+gz+"のテーマ";
+    document.getElementById("periodDescription").textContent = t[0]+" — "+t[1]+" これは干支の十干を中心に読み解いた、万人向けの暦のテーマです。個人の運勢を断定するものではありません。";
+    document.getElementById("periodModal").hidden = false;
+  }
+
+  ["year","month"].forEach(function(kind){
+    var el = document.getElementById(kind+"Gz").parentElement;
+    el.setAttribute("role","button");
+    el.setAttribute("tabindex","0");
+    el.setAttribute("aria-label",(kind==="year"?"年":"月")+"のテーマを読む");
+    el.addEventListener("click",function(){openPeriodTheme(kind);});
+    el.addEventListener("keydown",function(e){if(e.key==="Enter"||e.key===" "){e.preventDefault();openPeriodTheme(kind);}});
+  });
+  document.getElementById("periodClose").addEventListener("click",function(){document.getElementById("periodModal").hidden=true;});
+  document.getElementById("periodModal").addEventListener("click",function(e){if(e.target===this)this.hidden=true;});
+
   function renderHeaders(){
     var mh = monthHeaderInfo(state.year, state.month);
     document.getElementById("yearNum").textContent = state.year + "年";
     document.getElementById("yearGz").textContent = mh.yearGanzhi;
     document.getElementById("monthNum").textContent = state.month + "月";
     document.getElementById("monthGz").textContent = mh.monthGanzhi;
+    document.getElementById("yearTheme").textContent = periodTheme(mh.yearGanzhi)[0];
+    document.getElementById("monthTheme").textContent = periodTheme(mh.monthGanzhi)[0];
   }
 
   function renderGrid(){
@@ -1733,10 +1784,9 @@
       gzLine.setAttribute("tabindex","0");
       gzLine.setAttribute("aria-label",(g.stem + g.branch) + "の意味を見る");
       gzLine.dataset.date = [y,m,d].join("-");
-      gzLine.addEventListener("click", function(){ openGanzhiModal(this.textContent, this.dataset.date); });
-      gzLine.addEventListener("keydown", function(e){ if (e.key === "Enter" || e.key === " "){ e.preventDefault(); openGanzhiModal(this.textContent, this.dataset.date); } });
-      cell.appendChild(gzLine);
-
+      gzLine.dataset.ganzhi = g.stem + g.branch;
+      gzLine.addEventListener("click", function(){ openGanzhiModal(this.dataset.ganzhi, this.dataset.date); });
+      gzLine.addEventListener("keydown", function(e){ if (e.key === "Enter" || e.key === " "){ e.preventDefault(); openGanzhiModal(this.dataset.ganzhi, this.dataset.date); } });
       var dailyName = DAILY_LABELS[g.stem + g.branch];
       if (dailyName){
         var dailyLine = document.createElement("div");
@@ -1744,6 +1794,7 @@
         dailyLine.textContent = (GANZHI_MEANINGS[g.stem + g.branch].emoji || "") + " " + dailyName;
         cell.appendChild(dailyLine);
       }
+      cell.appendChild(gzLine);
 
       var sekki = isSekkiiriDay(y,m,d);
       if (sekki.isSekki){
@@ -1773,7 +1824,7 @@
       var featured=world.filter(function(w){return w.featured;});
       if(featured.length){var flags=document.createElement("div");flags.className="world-flags";flags.textContent=featured.map(function(w){return w.country.slice(0,4);}).join(" ");cell.appendChild(flags);}
       cell.setAttribute("tabindex","0");cell.setAttribute("role","button");cell.setAttribute("aria-label",d+"日の詳細を開く");
-      cell.addEventListener("click",function(e){if(e.target.classList.contains("ganzhi"))return;var g=this.querySelector(".ganzhi");openGanzhiModal(g.textContent,g.dataset.date);});
+      cell.addEventListener("click",function(e){if(e.target.classList.contains("ganzhi"))return;var g=this.querySelector(".ganzhi");openGanzhiModal(g.dataset.ganzhi,g.dataset.date);});
       cell.addEventListener("keydown",function(e){if(e.target!==this)return;if(e.key==="Enter"||e.key===" "){e.preventDefault();var g=this.querySelector(".ganzhi");openGanzhiModal(g.textContent,g.dataset.date);}});
       grid.appendChild(cell);
     }
