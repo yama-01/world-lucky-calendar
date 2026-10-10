@@ -1,5 +1,5 @@
 <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
-<title>世界の開運カレンダー｜日本・中国・韓国</title>
+<title>世界の開運カレンダー｜日本・中国・韓国・タイ・インド</title>
 <link rel="icon" href="data:image/svg+xml,<svg xmlns=%22http://www.w3.org/2000/svg%22 viewBox=%220 0 100 100%22><text y=%22.9em%22 font-size=%2290%22>🗓️</text></svg>">
 <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Shippori+Mincho:wght@500;700&family=Zen+Kaku+Gothic+New:wght@400;500;700&display=swap">
 <style>
@@ -169,7 +169,7 @@
     <span class="badge b-other">大明日</span>
     <span class="badge b-other">母倉日</span>
     <span class="badge b-other">月徳日</span>
-    <span class="ganzhi-hint">🇯🇵 日本の吉日・🇨🇳 中国の十二直・🇰🇷 韓国の吉日｜日付をタップで詳細</span>
+    <span class="ganzhi-hint">🇯🇵 日本・🇨🇳 中国・🇰🇷 韓国・🇹🇭 タイ・🇮🇳 インド｜日付をタップで詳細</span>
   </div>
 
   <div class="grid" id="weekdayRow"></div>
@@ -1140,11 +1140,39 @@
     var day=Number((parts.find(function(p){return p.type==="day";})||{}).value);
     return [9,10,19,20,29,30].indexOf(day)!==-1;
   }
+  // タイのワン・プラ：旧暦上弦・満月・下弦・新月の仏教布薩日。
+  // 中国暦を暫定的に使用。タイ公式暦とは日付が異なる場合がある。
+  var thaiLunarFormatter;
+  try { thaiLunarFormatter=new Intl.DateTimeFormat("en-u-ca-chinese",{timeZone:"Asia/Bangkok",day:"numeric",month:"numeric"}); } catch(e){}
+  function lunarDayFromFormatter(formatter,y,m,d,offsetHours){
+    if(!formatter)return null;
+    var parts=formatter.formatToParts(new Date(Date.UTC(y,m-1,d,12-offsetHours)));
+    var day=Number((parts.find(function(p){return p.type==="day";})||{}).value);
+    return Number.isFinite(day)?day:null;
+  }
+  function thaiWanPhraFor(y,m,d){
+    var day=lunarDayFromFormatter(thaiLunarFormatter,y,m,d,7);
+    if(day===8||day===15||day===23)return true;
+    if(day===29||day===30){
+      var next=new Date(Date.UTC(y,m-1,d+1));
+      return lunarDayFromFormatter(thaiLunarFormatter,next.getUTCFullYear(),next.getUTCMonth()+1,next.getUTCDate(),7)===1;
+    }
+    return false;
+  }
+  // インドのプールニマー：満月のティティ。中国旧暦15日を使った参考表示。
+  // 正式なパンチャンでは現地の日の出時刻とティティ境界で決定する。
+  var indiaLunarFormatter;
+  try { indiaLunarFormatter=new Intl.DateTimeFormat("en-u-ca-chinese",{timeZone:"Asia/Kolkata",day:"numeric",month:"numeric"}); } catch(e){}
+  function indiaPurnimaFor(y,m,d){
+    return lunarDayFromFormatter(indiaLunarFormatter,y,m,d,5.5)===15;
+  }
   function worldInfoFor(y,m,d){
     var result=[];
     var name=kenjoFor(y,m,d);
     result.push({country:"🇨🇳 中国",name:"建除十二神・"+name,desc:KENJO_INFO[name][0],category:KENJO_INFO[name][1],featured:KENJO_FEATURED.has(name)});
     if(koreanLuckyFor(y,m,d))result.push({country:"🇰🇷 韓国",name:"ソンオムヌンナル（손 없는 날）",desc:"旧暦の日付の末尾が9または0となる、引っ越しや婚礼などの縁起を担ぐ日。※中国暦ベースの暫定判定です。",category:"🌱 始まり・挑戦・❤️ 人間関係",featured:true});
+    if(thaiWanPhraFor(y,m,d))result.push({country:"🇹🇭 タイ",name:"ワン・プラ（วันพระ）",desc:"仏教の布薩日。寺院参拝、布施、瞑想、心を整えることに親しむ日。※中国旧暦を用いた暫定推定で、タイ公式暦とずれる場合があります。",category:"🙏 祈り・精神",featured:true});
+    if(indiaPurnimaFor(y,m,d))result.push({country:"🇮🇳 インド",name:"プールニマー（Purnima）",desc:"ヒンドゥー教などで大切にされる満月の祭日・祈りの日。※中国旧暦15日による暫定推定で、インドの正式なパンチャン（日の出・ティティ基準）とずれる場合があります。",category:"🙏 祈り・精神",featured:true});
     return result;
   }
 
