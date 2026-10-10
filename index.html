@@ -1185,7 +1185,7 @@
     }
     return [9,10,19,20,29,30].indexOf(day)!==-1;
   }
-  // ベトナム黄道日: 朔と中気をベトナム標準時(UTC+7)の日付で扱う。
+  // ベトナム黄道日: 朔日をUTC+7の暦日で扱い、中気の有無もその暦月の現地日付境界で判定する。
   // 既存の日本の六曜用旧暦計算とは独立させる。
   var vietnamLunarCache={};
   function vietnamDayKey(utcMs){
@@ -1199,7 +1199,7 @@
     var leapYear=(k1-k0===13),leapIndex=-1;
     if(leapYear){
       for(var i=1;i<k1-k0;i++){
-        if(!hasZhongqi(newMoon(k0+i),newMoon(k0+i+1))){leapIndex=i;break;}
+        if(!hasZhongqi(vietnamDayKey(newMoon(k0+i))-7*3600000,vietnamDayKey(newMoon(k0+i+1))-7*3600000)){leapIndex=i;break;}
       }
     }
     var months=[],number=11;
@@ -1232,10 +1232,10 @@
     if(index===mod(first+4,12))return {name:"金匱黄道日（Kim Quỹ）",desc:"金運や商売、財産に関わる吉事に縁起が良いとされる日。",category:"💰 金運・商売"};
     return null;
   }
-  // タイ・カラヨーク（曜日基準）。4月16日を年の切替日とする簡易日付判定。
+  // タイ・カラヨーク（曜日基準）。2026年の切替日（4/16）はタイ公的発表で確認済み。\n  // 他年は4月16日を暫定切替日とするため、現地の年別発表との照合が必要。
   // ワン・トンチャイとローカウィナートが同じ曜日の場合は掲載しない。
   function thaiThongchaiFor(y,m,d){
-    var cs=y-638-((m<4||(m===4&&d<16))?1:0);
+    var switchDay=16; // 2026年は4/16 14:40:12（タイ現地時刻）に切替。暦日表示は4/16から。\n    var cs=y-638-((m<4||(m===4&&d<switchDay))?1:0);
     var good=mod(cs*10+3,7);
     var bad=mod(cs+1120,7);
     var weekday=new Date(Date.UTC(y,m-1,d)).getUTCDay();
