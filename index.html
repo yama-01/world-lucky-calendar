@@ -137,7 +137,13 @@
   .ganzhi-theme{ font-weight:700; margin:3px 0 12px; }
   .ganzhi-desc{ line-height:1.8; margin:0; }
   .ganzhi-dialog{ max-height:calc(100dvh - 40px); overflow-y:auto; }
-  .lucky-modal-section{ margin-top:18px; padding-top:15px; border-top:1px solid var(--line); }
+  .daily-detail-panel{ margin-top:16px; padding:12px 14px; border-radius:6px; background:#f2f5f5; }
+  .daily-detail-heading{ font-size:13px; font-weight:700; color:var(--accent); }
+  .daily-detail-text{ margin:5px 0 0; font-size:14px; line-height:1.7; }
+  .daily-reason{ margin-top:14px; font-size:13px; color:var(--sub); }
+  .daily-reason summary{ cursor:pointer; text-decoration:underline; text-underline-offset:3px; }
+  .daily-reason p{ margin:8px 0 0; line-height:1.75; }
+    .lucky-modal-section{ margin-top:18px; padding-top:15px; border-top:1px solid var(--line); }
   .lucky-modal-item{ margin-top:10px; line-height:1.7; }
   .lucky-modal-name{ font-weight:700; }
   .lucky-modal-description{ font-size:13px; color:var(--sub); }
@@ -189,7 +195,16 @@
     <h2 class="ganzhi-title" id="ganzhiModalTitle"></h2>
     <div class="ganzhi-theme-label">今日のテーマ</div>
     <div class="ganzhi-theme" id="ganzhiModalTheme"></div>
+    <div class="ganzhi-theme-label">日運メッセージ</div>
     <p class="ganzhi-desc" id="ganzhiModalDesc"></p>
+    <div class="daily-detail-panel">
+      <div class="daily-detail-heading">🍀 開運アクション</div>
+      <p class="daily-detail-text" id="ganzhiModalAction"></p>
+    </div>
+    <details class="daily-reason">
+      <summary>占術的な根拠を見る</summary>
+      <p id="ganzhiModalReason"></p>
+    </details>
     <section class="lucky-modal-section" id="ganzhiModalLucky" hidden><strong>この日の開運日</strong><div id="ganzhiModalLuckyItems"></div></section>
   </div>
 </div>
@@ -961,6 +976,250 @@
     "癸亥": "振り返り"
   };
 
+  // 60干支の開運アクションと占術的な根拠（編集用データ）
+  var DAILY_DETAILS = {
+    "甲子": {
+      "action": "新しく始めたいことを一つ決める",
+      "reason": "甲は伸びる大木、子は冬の水。水が木を育てる「水生木」と、六十干支の始まりを重ねたテーマです。"
+    },
+    "乙丑": {
+      "action": "途中のことを一つ進める",
+      "reason": "乙は草花、丑は冬の終わりの土。寒い時期に根を張る植物のように、地道な成長を表します。"
+    },
+    "丙寅": {
+      "action": "気になることに一つ挑戦する",
+      "reason": "丙は太陽の火、寅は春の木。木が火を助ける「木生火」から、行動力と発展を連想します。"
+    },
+    "丁卯": {
+      "action": "お気に入りの服や小物を身につける",
+      "reason": "丁は灯火、卯は春の草木。木生火の組み合わせから、繊細な魅力を育むイメージです。"
+    },
+    "戊辰": {
+      "action": "予定や目標を整理する",
+      "reason": "戊は山の土、辰も土の性質を持ちます。土の重なりから、安定した基盤づくりを象徴します。"
+    },
+    "己巳": {
+      "action": "次に必要な準備を一つする",
+      "reason": "己は田畑の土、巳は初夏の火。火が土を生む「火生土」から、育成と準備を連想します。"
+    },
+    "庚午": {
+      "action": "苦手なことに10分だけ取り組む",
+      "reason": "庚は硬い金属、午は盛夏の火。火が金を鍛えるイメージから、試練を通じた鍛錬を表します。"
+    },
+    "辛未": {
+      "action": "身だしなみを一か所整える",
+      "reason": "辛は宝石や貴金属、未は夏の終わりの土。土が金を生む「土生金」から、価値を磨く象意です。"
+    },
+    "壬申": {
+      "action": "新しい情報を一つ調べる",
+      "reason": "壬は大河の水、申は秋の金。金が水を生む「金生水」から、情報や流れの広がりを連想します。"
+    },
+    "癸酉": {
+      "action": "今の気持ちを一言書き出す",
+      "reason": "癸は雨や露の水、酉は秋の金。金生水から、感性と静かな洞察をイメージします。"
+    },
+    "甲戌": {
+      "action": "目標に向けた一歩を決める",
+      "reason": "甲は大木、戌は乾いた秋の土。木が土に根を張り道を切り開く姿から、信念と開拓を表します。"
+    },
+    "乙亥": {
+      "action": "ゆっくり過ごす時間を作る",
+      "reason": "乙は草花、亥は冬の水。水生木から、無理をせず養分を受け取る柔軟さを連想します。"
+    },
+    "丙子": {
+      "action": "アイデアを三つメモする",
+      "reason": "丙は太陽の火、子は冬の水。火と水の対照的な性質から、熱意と冷静さの調整を表します。"
+    },
+    "丁丑": {
+      "action": "続けたい習慣を一つ実践する",
+      "reason": "丁は小さな灯火、丑は寒い季節の土。火を絶やさず守る姿に、継続と積み重ねを重ねます。"
+    },
+    "戊寅": {
+      "action": "いつもの行動を一つ変える",
+      "reason": "戊は山の土、寅は春の木。木が土を剋する「木剋土」から、現状を動かす変化を連想します。"
+    },
+    "己卯": {
+      "action": "身近な人に感謝を伝える",
+      "reason": "己は田畑の土、卯は春の木。土と植物が関わる姿から、関係を育てる協調性を読みます。"
+    },
+    "庚辰": {
+      "action": "迷っている小さなことを一つ決める",
+      "reason": "庚は硬い金属、辰は土。土生金から、土台を確かめて形を決める力を表します。"
+    },
+    "辛巳": {
+      "action": "大切な持ち物を一つ手入れする",
+      "reason": "辛は貴金属、巳は火。火が金を精錬する姿から、磨き上げることを象徴します。"
+    },
+    "壬午": {
+      "action": "意識して休憩を一回取る",
+      "reason": "壬は大きな水、午は強い火。水火の対照から、勢いと落ち着きのバランスを考える日です。"
+    },
+    "癸未": {
+      "action": "スマホから少し離れて休む",
+      "reason": "癸は繊細な雨水、未は乾きやすい夏の土。土が水を抑える関係から、心身の余裕を大切にします。"
+    },
+    "甲申": {
+      "action": "うまくいかない方法を一つ変える",
+      "reason": "甲は大木、申は金。金が木を剋する「金剋木」から、変化に応じて成長する姿を連想します。"
+    },
+    "乙酉": {
+      "action": "不要なものを一つ手放す",
+      "reason": "乙は草花、酉は鋭い金。金剋木から、余分な枝葉を整える選別のイメージです。"
+    },
+    "丙戌": {
+      "action": "後回しの用事を一つ実行する",
+      "reason": "丙は太陽の火、戌は乾いた土。火生土から、熱意を実際の形へ移すことを表します。"
+    },
+    "丁亥": {
+      "action": "静かな時間に自分の気持ちを確かめる",
+      "reason": "丁は灯火、亥は冬の水。水が火を抑える関係から、内面を見つめて火を守る象意です。"
+    },
+    "戊子": {
+      "action": "今週の予定を確認する",
+      "reason": "戊は山の土、子は水。土が水の流れを制御する「土剋水」から、管理と方向づけを連想します。"
+    },
+    "己丑": {
+      "action": "日々の基本を一つ丁寧に行う",
+      "reason": "己は田畑の土、丑も土。土の重なりと冬の蓄積から、基礎固めを象徴します。"
+    },
+    "庚寅": {
+      "action": "やめたい習慣に区切りをつける",
+      "reason": "庚は刃物にたとえる金、寅は勢いのある春の木。金剋木から、切り替えや決断を連想します。"
+    },
+    "辛卯": {
+      "action": "普段の習慣を一つ見直す",
+      "reason": "辛は精緻な金、卯は春の木。金剋木から、細部を選び整える洗練を表します。"
+    },
+    "壬辰": {
+      "action": "予定を一つ柔軟に調整する",
+      "reason": "壬は大河の水、辰は水を含む土。流れと土の関係から、進路の調整をイメージします。"
+    },
+    "癸巳": {
+      "action": "即答せず一度考えてから決める",
+      "reason": "癸は雨水、巳は初夏の火。水と火の対照から、冷静な観察と見極めを連想します。"
+    },
+    "甲午": {
+      "action": "自分の考えを一つ言葉にする",
+      "reason": "甲は大木、午は盛夏の火。木生火から、成長した力を表現へつなげる象意です。"
+    },
+    "乙未": {
+      "action": "身近な人とゆっくり話す",
+      "reason": "乙は草花、未は夏の土。植物が土に根づく姿から、つながりを育てることを表します。"
+    },
+    "丙申": {
+      "action": "思いついたことを小さく試す",
+      "reason": "丙は太陽の火、申は金。火が金を鍛える「火剋金」から、実践を通じた成長を連想します。"
+    },
+    "丁酉": {
+      "action": "写真や文章を一つ丁寧に仕上げる",
+      "reason": "丁は灯火、酉は洗練された金。火が金を磨く姿から、感性と完成度を表します。"
+    },
+    "戊戌": {
+      "action": "決めたことを一つ続ける",
+      "reason": "戊は山の土、戌も土。土の重なりから、信念や安定を象徴します。"
+    },
+    "己亥": {
+      "action": "気持ちを整理する時間を作る",
+      "reason": "己は田畑の土、亥は冬の水。土と水の関係から、受け止めながら整える姿を連想します。"
+    },
+    "庚子": {
+      "action": "新しいやり方を一つ考える",
+      "reason": "庚は金、子は水。金生水から、決断の先に新しい発想が流れ出すイメージです。"
+    },
+    "辛丑": {
+      "action": "得意なことを10分磨く",
+      "reason": "辛は宝石、丑は蓄える土。土生金から、時間をかけて価値を育てる象意です。"
+    },
+    "壬寅": {
+      "action": "興味のある分野を一つ調べる",
+      "reason": "壬は大きな水、寅は春の木。水生木から、可能性を広げる成長を連想します。"
+    },
+    "癸卯": {
+      "action": "小さな楽しみを一つ見つける",
+      "reason": "癸は雨水、卯は春の草木。水生木から、静かに芽を育む感性を表します。"
+    },
+    "甲辰": {
+      "action": "少し高い目標を一つ書く",
+      "reason": "甲は大木、辰は春の土。根を張って伸びる姿から、目標と成長を連想します。"
+    },
+    "乙巳": {
+      "action": "いつもの作業に工夫を一つ加える",
+      "reason": "乙は草花、巳は初夏の火。木生火から、柔軟な発想を形にすることを表します。"
+    },
+    "丙午": {
+      "action": "やりたいことに積極的に取り組む",
+      "reason": "丙も午も火の性質が強い組み合わせ。情熱と自己表現を象徴します。"
+    },
+    "丁未": {
+      "action": "誰かをさりげなく気遣う",
+      "reason": "丁は温かな灯火、未は夏の土。火生土から、思いやりを形にする姿を連想します。"
+    },
+    "戊申": {
+      "action": "進行中の作業を一つ完成に近づける",
+      "reason": "戊は山の土、申は金。土生金から、蓄積を成果へつなげる象意です。"
+    },
+    "己酉": {
+      "action": "机の上を一か所整理する",
+      "reason": "己は田畑の土、酉は金。土生金から、丁寧に整えて仕上げる姿を連想します。"
+    },
+    "庚戌": {
+      "action": "曖昧な約束を一つ確認する",
+      "reason": "庚は硬い金属、戌は土。土生金から、責任を持って形を定めることを表します。"
+    },
+    "辛亥": {
+      "action": "静かな時間に思いつきをメモする",
+      "reason": "辛は繊細な金、亥は冬の水。金生水から、内省が発想につながるイメージです。"
+    },
+    "壬子": {
+      "action": "気になる人と会話する",
+      "reason": "壬も子も水の性質を持ちます。広がる水のイメージから、交流と情報の流れを象徴します。"
+    },
+    "癸丑": {
+      "action": "明日の準備を一つ済ませる",
+      "reason": "癸は雨水、丑は冬の土。静かに蓄える季節感から、準備と忍耐を連想します。"
+    },
+    "甲寅": {
+      "action": "目標に向けて一歩動く",
+      "reason": "甲は大木、寅は春の木。木の力が重なり、前進と成長を象徴します。"
+    },
+    "乙卯": {
+      "action": "誰かに優しい言葉をかける",
+      "reason": "乙は草花、卯は春の木。木の力が重なり、しなやかな成長と縁を表します。"
+    },
+    "丙辰": {
+      "action": "考えていたことを具体的な予定にする",
+      "reason": "丙は太陽の火、辰は土。火生土から、構想を形にする姿を連想します。"
+    },
+    "丁巳": {
+      "action": "気になることに集中する時間を作る",
+      "reason": "丁は灯火、巳は火。火の性質が重なり、内側の熱意と集中を象徴します。"
+    },
+    "戊午": {
+      "action": "自信を持って一つ行動する",
+      "reason": "戊は山の土、午は盛夏の火。火生土から、力強さと信頼を連想します。"
+    },
+    "己未": {
+      "action": "身の回りを心地よく整える",
+      "reason": "己は田畑の土、未も土。土の性質が重なり、安心できる基盤を象徴します。"
+    },
+    "庚申": {
+      "action": "不要な手順を一つ減らす",
+      "reason": "庚は硬い金属、申も金。金の性質が重なり、合理的な改革と決断を表します。"
+    },
+    "辛酉": {
+      "action": "途中のものを一つ丁寧に仕上げる",
+      "reason": "辛は宝石、酉も金。金の性質が重なり、洗練と完成を象徴します。"
+    },
+    "壬戌": {
+      "action": "今後の方向性を一度確認する",
+      "reason": "壬は大河の水、戌は土。土が水の流れを抑える関係から、進路を定めることを連想します。"
+    },
+    "癸亥": {
+      "action": "最近の出来事を静かに振り返る",
+      "reason": "癸は雨水、亥も水。水の性質が重なり、内省と次の流れへの準備を表します。"
+    }
+  };
+
   function jdn(y,m,d){
     var a = Math.floor((14-m)/12);
     var y2 = y+4800-a;
@@ -1382,6 +1641,10 @@
     document.getElementById("ganzhiModalTitle").textContent = info.emoji + " " + ganzhi + "（" + info.reading + "）";
     document.getElementById("ganzhiModalTheme").textContent = (DAILY_LABELS[ganzhi] || info.theme.join("・")) + "の日";
     document.getElementById("ganzhiModalDesc").textContent = info.description;
+    var dailyDetail = DAILY_DETAILS[ganzhi] || {};
+    document.getElementById("ganzhiModalAction").textContent = dailyDetail.action || "";
+    document.getElementById("ganzhiModalReason").textContent = dailyDetail.reason || "";
+    document.querySelector(".daily-reason").open = false;
     var parts = dateText.split("-").map(Number);
     var lucky = luckyDaysFor(parts[0], parts[1], parts[2]);
     var ordered = LUCKY_DAY_ORDER.filter(function(name){ return lucky.indexOf(name) !== -1; });
