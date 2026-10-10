@@ -1,5 +1,5 @@
 <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
-<title>世界の開運カレンダー｜日本・中国・韓国</title>
+<title>世界の開運カレンダー｜日本・中国・韓国・ベトナム</title>
 <link rel="icon" href="data:image/svg+xml,<svg xmlns=%22http://www.w3.org/2000/svg%22 viewBox=%220 0 100 100%22><text y=%22.9em%22 font-size=%2290%22>🗓️</text></svg>">
 <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Shippori+Mincho:wght@500;700&family=Zen+Kaku+Gothic+New:wght@400;500;700&display=swap">
 <style>
@@ -1145,11 +1145,60 @@
     var day=Number((parts.find(function(p){return p.type==="day";})||{}).value);
     return [9,10,19,20,29,30].indexOf(day)!==-1;
   }
+  // ベトナム黄道日: 朔と中気をベトナム標準時(UTC+7)の日付で扱う。
+  // 既存の日本の六曜用旧暦計算とは独立させる。
+  var vietnamLunarCache={};
+  function vietnamDayKey(utcMs){
+    var t=new Date(utcMs+7*3600000);
+    return Date.UTC(t.getUTCFullYear(),t.getUTCMonth(),t.getUTCDate());
+  }
+  function vietnamLunarMonths(year){
+    if(vietnamLunarCache[year])return vietnamLunarCache[year];
+    var ws0=winterSolstice(year-1),ws1=winterSolstice(year);
+    var k0=newMoonOnOrBefore(ws0).k,k1=newMoonOnOrBefore(ws1).k;
+    var leapYear=(k1-k0===13),leapIndex=-1;
+    if(leapYear){
+      for(var i=1;i<k1-k0;i++){
+        if(!hasZhongqi(newMoon(k0+i),newMoon(k0+i+1))){leapIndex=i;break;}
+      }
+    }
+    var months=[],number=11;
+    for(var idx=0;idx<k1-k0;idx++){
+      var leap=(idx===leapIndex);
+      if(idx>0&&!leap)number=number%12+1;
+      months.push({start:vietnamDayKey(newMoon(k0+idx)),end:vietnamDayKey(newMoon(k0+idx+1)),month:number,leap:leap});
+    }
+    return vietnamLunarCache[year]=months;
+  }
+  function vietnamLunarDate(y,m,d){
+    var target=Date.UTC(y,m-1,d);
+    for(var yr=y-1;yr<=y+1;yr++){
+      var months=vietnamLunarMonths(yr);
+      for(var i=0;i<months.length;i++){
+        var item=months[i];
+        if(item.start<=target&&target<item.end)return {month:item.month,leap:item.leap,day:Math.round((target-item.start)/86400000)+1};
+      }
+    }
+    return null;
+  }
+  // 旧暦1・7月は子から始まり、月の組が進むごとに青龍・金匱は十二支を2つ進める。
+  function vietnamLuckyFor(y,m,d){
+    var lunar=vietnamLunarDate(y,m,d);
+    if(!lunar)return null;
+    var first=mod((lunar.month-1)%6*2,12);
+    var branch=dayGanzhi(y,m,d).branch;
+    var index=DAY_BRANCHES.indexOf(branch);
+    if(index===first)return {name:"青龍黄道日（Thanh Long）",desc:"開業や新しい挑戦など、物事を始めるのに縁起が良いとされる日。",category:"🌱 開業・成功"};
+    if(index===mod(first+4,12))return {name:"金匱黄道日（Kim Quỹ）",desc:"金運や商売、財産に関わる吉事に縁起が良いとされる日。",category:"💰 金運・商売"};
+    return null;
+  }
   function worldInfoFor(y,m,d){
     var result=[];
     var name=kenjoFor(y,m,d);
     result.push({country:"🇨🇳 中国",name:"建除十二神・"+name,desc:KENJO_INFO[name][0],category:KENJO_INFO[name][1],featured:KENJO_FEATURED.has(name)});
     if(koreanLuckyFor(y,m,d))result.push({country:"🇰🇷 韓国",name:"ソンオムヌンナル（손 없는 날）",desc:"旧暦の日付の末尾が9または0となる、引っ越しや婚礼などの縁起を担ぐ日。",category:"🌱 始まり・挑戦・❤️ 人間関係",featured:true});
+    var vn=vietnamLuckyFor(y,m,d);
+    if(vn)result.push({country:"🇻🇳 ベトナム",name:vn.name,desc:vn.desc,category:vn.category,featured:true});
     return result;
   }
 
