@@ -1130,10 +1130,22 @@
   var KENJO_FEATURED = new Set(["成日","開日","満日"]);
   // 十二直は節入りの日を前日と同じ直として数える方式を採用。
   // 既存の節月・日の干支を再利用する。
+  function japaneseCalendarEndUtc(y,m,d){
+    return Date.UTC(y,m-1,d+1)-9*3600000-1;
+  }
+  // 十二直の「おどる」: 節入り当日は前日と同じ直を配当する。
+  // 節入り時刻は日本標準時の暦日で判定し、通常日は当日の節月を使用。
   function kenjoFor(y,m,d){
-    var ms=Date.UTC(y,m-1,d,12)-9*3600000;
-    var mg=monthGanzhiAt(ms), g=dayGanzhi(y,m,d);
+    var g=dayGanzhi(y,m,d);
+    var mg=monthGanzhiAt(japaneseCalendarEndUtc(y,m,d));
     var idx=mod(DAY_BRANCHES.indexOf(g.branch)-DAY_BRANCHES.indexOf(mg.branch),12);
+    if(isSekkiiriDay(y,m,d)){
+      var prev=new Date(Date.UTC(y,m-1,d-1));
+      var py=prev.getUTCFullYear(),pm=prev.getUTCMonth()+1,pd=prev.getUTCDate();
+      var pg=dayGanzhi(py,pm,pd);
+      var prevMonth=monthGanzhiAt(japaneseCalendarEndUtc(py,pm,pd));
+      idx=mod(DAY_BRANCHES.indexOf(pg.branch)-DAY_BRANCHES.indexOf(prevMonth.branch),12);
+    }
     return KENJO_NAMES[idx];
   }
   // Intlの中国暦は韓国旧暦と稀に日付差が生じるため、韓国暦の代替計算として暫定利用。
@@ -1251,8 +1263,8 @@
   function luckyDaysFor(year,month,day){
     var g = dayGanzhi(year,month,day);
     var ganzhi = g.stem+g.branch;
-    var notifyUtc = Date.UTC(year,month-1,day,7,0,0) - 9*3600000;
-    var mg = monthGanzhiAt(notifyUtc);
+    // 吉日暦注は節入りした暦日から新しい節月を採用する。
+    var mg = monthGanzhiAt(japaneseCalendarEndUtc(year,month,day));
     var monthBranch = mg.branch;
     var result = [];
     if (ganzhi === TENSHA_SEASON[monthBranch]) result.push("天赦日");
